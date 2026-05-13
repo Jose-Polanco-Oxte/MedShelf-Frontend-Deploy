@@ -37,4 +37,9 @@ export class ApiService {
   delete<T>(endpoint: string, options?: any) {
     return this.http.delete<T>(`${this.apiUrl}${endpoint}`, this.options(options));
   }
+
+  // Ejemplo de método PATCH
+  patch<T>(endpoint: string, data: any) {
+    return this.http.patch<T>(`${this.apiUrl}${endpoint}`, data, this.options());
+  }
 }
