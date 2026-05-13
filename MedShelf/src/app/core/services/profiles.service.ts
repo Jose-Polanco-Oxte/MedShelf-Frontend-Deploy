@@ -60,14 +60,14 @@ export class ProfilesService {
   }
 
   getProfileDetails(profileId: string) {
-    return this.api.get<ProfileResponse>(`/profiles/${profileId}`).pipe(
-      tap((profile) => this._selectedProfile.set(profile)),
-    );
+    return this.api
+      .get<ProfileResponse>(`/profiles/${profileId}`)
+      .pipe(tap((profile) => this._selectedProfile.set(profile)));
   }
 
   createProfile(data: CreateProfileRequest) {
-    return this.api.post<ProfileResponse>('/profiles', data).pipe(
-      tap((profile) => this._profiles.update((prev) => [profile, ...prev])),
-    );
+    return this.api
+      .post<ProfileResponse>('/profiles', data)
+      .pipe(tap((profile) => this._profiles.update((prev) => [profile, ...prev])));
   }
 }
