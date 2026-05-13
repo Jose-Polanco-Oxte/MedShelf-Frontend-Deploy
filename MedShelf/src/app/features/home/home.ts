@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { LucideAngularModule, House, Plus, X, InfoIcon } from 'lucide-angular';
 import { ThemeService } from '../../shared/services/theme.service';
 import { ApiService } from '../../shared/services/api.service';
+import { ProfilesService } from '../../core/services/profiles.service';
 import { RouterLink } from '@angular/router';
 
 interface HouseResponse {
@@ -20,6 +21,14 @@ interface LocationViewModel {
   quantity: number;
 }
 
+interface ProfileViewModel {
+  id: string;
+  name: string;
+  initials: string;
+  email?: string;
+  relationship?: string;
+}
+
 @Component({
   selector: 'app-home',
   imports: [CommonModule, LucideAngularModule, RouterLink],
@@ -29,16 +38,19 @@ interface LocationViewModel {
 export class Home implements OnInit {
   private themeService = inject(ThemeService);
   private apiService = inject(ApiService);
+  private profilesService = inject(ProfilesService);
   private cdr = inject(ChangeDetectorRef);
 
   houseData: HouseResponse | null = null;
   locations: LocationViewModel[] = [];
+  profiles: ProfileViewModel[] = [];
   isLoading = true;
   error: string | null = null;
 
   ngOnInit() {
     this.themeService.theme$.subscribe();
     this.loadHouseData();
+    this.loadProfiles();
   }
 
   trackByLocation(index: number, item: LocationViewModel) {
@@ -139,22 +151,29 @@ export class Home implements OnInit {
     });
   }
 
-  profiles = [
-    {
-      id: 1,
-      name: 'Ana',
-      initials: 'A',
-      relationship: 'Madre',
-      route: '/admin',
-    },
-    {
-      id: 2,
-      name: 'Juan',
-      initials: 'J',
-      relationship: 'Hijo',
-      route: '/user',
-    },
-  ];
+  loadProfiles() {
+    this.profilesService.getProfiles().subscribe({
+      next: () => {
+        this.profiles = this.profilesService.profiles().map((profile) => ({
+          id: profile.id,
+          name: profile.name,
+          initials: profile.name
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase(),
+          email: profile.email,
+          relationship: '',
+        }));
+        console.log('Perfiles cargados:', this.profiles);
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.error = 'Error cargando los perfiles';
+        console.error('Error cargando los perfiles:', error);
+      },
+    });
+  }
 
   icons = {
     house: House,
