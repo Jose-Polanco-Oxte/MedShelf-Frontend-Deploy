@@ -184,6 +184,34 @@ div {
   margin: 0;
 }
 
+/* ── Delete location button ── */
+.btn-delete-location {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 59, 48, 0.9);
+  border: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.btn-delete-location:hover {
+  background: rgba(255, 59, 48, 1);
+  transform: scale(1.1);
+}
+
+.btn-delete-location:active {
+  transform: scale(0.95);
+}
+
 /* ── Add new location button ── */
 .btn-add-location {
   display: flex;

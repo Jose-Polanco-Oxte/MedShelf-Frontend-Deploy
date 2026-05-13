@@ -11,29 +11,41 @@ import { AddLocation } from './features/home/components/add-location/add-locatio
 import { Meds } from './features/meds/meds';
 import { AddMedicineForm } from './features/medkit/components/add-medicine-form/add-medicine-form';
 import { AddTreatmentForm } from './features/meds/components/add-tratments-form/add-treatment-form';
+import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 
 export const routes: Routes = [
   {
     path: '',
     component: MainLayout,
+    canActivate: [authGuard], // 👈 protege todo el layout de una vez
     children: [
       { path: '', component: Home },
       { path: 'add-location', component: AddLocation },
-      { path: 'medkit', children: [
-        { path: '', component: Medkit },
-        { path: 'add-medicine', component: AddMedicineForm }
-      ] },
-      { path: 'profile', children: [
-        { path: '', component: Profile },
-        { path: 'edit', component: EditProfile },
-        { path: 'add-family', component: AddFamily },
-      ] },
-      { path: 'meds', children: [
-        { path: '', component: Meds },
-        { path: 'add-treatment', component: AddTreatmentForm },
-      ] },
+      {
+        path: 'medkit',
+        children: [
+          { path: '', component: Medkit },
+          { path: 'add-medicine', component: AddMedicineForm },
+        ],
+      },
+      {
+        path: 'profile',
+        children: [
+          { path: '', component: Profile },
+          { path: 'edit', component: EditProfile },
+          { path: 'add-family', component: AddFamily },
+        ],
+      },
+      {
+        path: 'meds',
+        children: [
+          { path: '', component: Meds },
+          { path: 'add-treatment', component: AddTreatmentForm },
+        ],
+      },
     ],
   },
-  { path: 'login', component: Login },
-  { path: 'register', component: Register },
+  { path: 'login', component: Login, canActivate: [guestGuard] }, // 👈
+  { path: 'register', component: Register, canActivate: [guestGuard] }, // 👈
 ];

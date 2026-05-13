@@ -7,6 +7,21 @@
   text-align: center;
 }
 
+.state-banner {
+  margin: 1rem 0;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-lighter);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.state-error {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
 /* ── Perfil principal ── */
 .main-profile {
   margin-top: 1.25rem;
@@ -207,6 +222,11 @@
   margin: 0;
 }
 
+.profile-card small {
+  color: var(--text-tertiary);
+  font-size: 0.78rem;
+}
+
 .add-btn {
   background: var(--primary-blue);
   color: white;
@@ -271,5 +291,4 @@
   border: none;
   background: var(--error-bg);
   color: var(--error-text);
-
 }

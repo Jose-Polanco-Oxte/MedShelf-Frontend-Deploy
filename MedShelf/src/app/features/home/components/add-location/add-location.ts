@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
+import { ApiService } from '../../../../shared/services/api.service';
 
 interface Location {
   id: number;
@@ -19,6 +20,9 @@ interface Location {
   styleUrl: './add-location.css',
 })
 export class AddLocation {
+  private router = inject(Router);
+  private apiService = inject(ApiService);
+
   icons = { arrowLeft: ArrowLeft };
 
   locationData = {
@@ -28,30 +32,42 @@ export class AddLocation {
   };
 
   icons_options = ['house', 'office', 'warehouse', 'cabinet', 'drawer'];
+  isLoading = false;
+  errorMessage = '';
 
-  constructor(private router: Router) {}
-
-  // Agregar nueva ubicación
+  // Agregar nueva ubicación al backend
   addLocation() {
-    if (!this.locationData.name.trim() || !this.locationData.description.trim()) {
-      alert('Por favor completa todos los campos');
+    if (!this.locationData.name.trim()) {
+      this.errorMessage = 'Por favor ingresa un nombre para la ubicación';
       return;
     }
 
-    const locations = JSON.parse(localStorage.getItem('locations') || '[]');
-    locations.push({
-      ...this.locationData,
-      id: Date.now(),
-      quantity: 0,
-    });
-    localStorage.setItem('locations', JSON.stringify(locations));
+    this.isLoading = true;
+    this.errorMessage = '';
 
-    // Volver a la página principal
-    this.router.navigate(['/']);
+    const houseId = 'cf0107ee-e86d-424f-818a-85ba26ea5335';
+    const endpoint = `/houses/${houseId}/places`;
+    const payload = { name: this.locationData.name };
+
+    this.apiService.post(endpoint, payload).subscribe({
+      next: (response) => {
+        console.log('Ubicación creada exitosamente:', response);
+        this.isLoading = false;
+        // Volver a la página principal
+        this.router.navigate(['/']);
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.errorMessage = 'Error al crear la ubicación. Intenta de nuevo.';
+        console.error('Error:', error);
+      },
+    });
   }
 
   // Cancelar
   cancel() {
-    this.router.navigate(['/']);
+    if (!this.isLoading) {
+      this.router.navigate(['/']);
+    }
   }
 }

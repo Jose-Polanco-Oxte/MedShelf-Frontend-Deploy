@@ -1,39 +1,44 @@
 <div class="profile-container">
+  <div *ngIf="isLoading" class="state-banner">Cargando perfiles...</div>
+  <div *ngIf="errorMessage" class="state-banner state-error">{{ errorMessage }}</div>
+
   <!-- Perfil principal -->
-  <div class="main-profile">
+  <div class="main-profile" *ngIf="!isLoading && !errorMessage">
     <div class="avatar-wrapper">
       <div class="avatar">
-        <span>AB</span>
+        <span>{{ getInitials(profile.name) || 'P' }}</span>
       </div>
     </div>
-    <h2 class="profile-name">Alberto</h2>
-    <p class="profile-sub">Administrador</p>
+    <h2 class="profile-name">{{ profile.name }}</h2>
+    <p class="profile-sub">{{ profile.role }}</p>
     <div class="profile-badges">
-      <span class="badge badge-blue">O+</span>
-      <span class="badge badge-red">Alérgico: Penicilina</span>
+      <span class="badge badge-blue" *ngIf="profile.bloodtype">{{ profile.bloodtype }}</span>
+      <span class="badge badge-red" *ngIf="profile.alergies.length"
+        >Alérgico: {{ profile.alergies.join(', ') }}</span
+      >
     </div>
   </div>
 
   <!-- Stats rápidos -->
-  <div class="stats-row">
+  <div class="stats-row" *ngIf="!isLoading && !errorMessage">
     <div class="stat-item">
-      <span class="stat-num">3</span>
-      <span class="stat-label">Medicamentos</span>
+      <span class="stat-num">{{ profile.alergies.length }}</span>
+      <span class="stat-label">Alergias</span>
     </div>
     <div class="stat-divider"></div>
     <div class="stat-item">
-      <span class="stat-num">89%</span>
-      <span class="stat-label">Adherencia</span>
+      <span class="stat-num">{{ profile.age || '—' }}</span>
+      <span class="stat-label">Edad</span>
     </div>
     <div class="stat-divider"></div>
     <div class="stat-item">
-      <span class="stat-num">12</span>
-      <span class="stat-label">Días racha</span>
+      <span class="stat-num">{{ familyProfiles.length }}</span>
+      <span class="stat-label">Perfiles</span>
     </div>
   </div>
 
   <!-- Información -->
-  <div class="info-section">
+  <div class="info-section" *ngIf="!isLoading && !errorMessage">
     <p class="section-title">INFORMACIÓN</p>
     <div class="info-card">
       <div class="info-item">
@@ -50,7 +55,9 @@
       </div>
       <div class="info-item">
         <span class="label">Alergias</span>
-        <span class="value allergy">{{ profile.alergies.join(', ') }}</span>
+        <span class="value allergy">{{
+          profile.alergies.length ? profile.alergies.join(', ') : 'Sin alergias registradas'
+        }}</span>
       </div>
       <div class="info-item">
         <span class="label">Contacto</span>
@@ -64,11 +71,18 @@
         <span class="label">Dirección</span>
         <span class="value">{{ profile.address }}</span>
       </div>
+      <div class="info-item">
+        <span class="label">Contacto emergencia</span>
+        <span class="value"
+          >{{ profile.emergencyContact.name }}
+          {{ profile.emergencyContact.phone ? '- ' + profile.emergencyContact.phone : '' }}</span
+        >
+      </div>
     </div>
   </div>
 
   <!-- Otros perfiles -->
-  <div class="profiles-section">
+  <div class="profiles-section" *ngIf="!isLoading && !errorMessage">
     <p class="section-title">FAMILIA</p>
     <div class="profiles-list">
       @for (profile of familyProfiles; track profile.id) {
@@ -76,7 +90,8 @@
           <div class="avatar small">
             <span>{{ profile.initials }}</span>
           </div>
-          <p>{{ profile.relation }}</p>
+          <p>{{ profile.name }}</p>
+          <small>{{ profile.relation }}</small>
         </div>
       }
       <div class="profile-card">
@@ -89,8 +104,8 @@
       </div>
     </div>
   </div>
-  
-  <div class="profile-section">
+
+  <div class="profile-section" *ngIf="!isLoading && !errorMessage">
     <p class="section-title">AJUSTES</p>
     <button class="btn-edit" routerLink="edit">Editar perfil</button>
     <button class="btn-theme" (click)="toggleTheme()">
@@ -101,6 +116,6 @@
       }
       <span>{{ currentTheme === 'light' ? 'Tema Oscuro' : 'Tema Claro' }}</span>
     </button>
-    <button class="btn-logout" (click)="logout()">Cerrar sesión</button> 
+    <button class="btn-logout" (click)="logout()">Cerrar sesión</button>
   </div>
 </div>
