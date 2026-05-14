@@ -33,6 +33,25 @@ div {
   margin: 0;
 }
 
+.welcome-container {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.welcome-container h2 {
+  margin: 0;
+}
+
+.house-owner {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--primary-blue);
+  text-transform: uppercase;
+}
+
 /* ── General sections ── */
 .family-section,
 .locations-section {
@@ -236,4 +255,162 @@ div {
 .btn-add-location:active {
   background: var(--bg-primary);
   transform: scale(0.98);
+}
+
+/* ── Toast Notification ── */
+.toast-notification {
+  position: fixed;
+  bottom: 2rem;
+  right: 1rem;
+  max-width: 380px;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  animation: slideInRight 0.3s ease-out forwards;
+}
+
+.toast-notification.toast-error {
+  background: #ff4444;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.toast-content {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.toast-icon {
+  color: white;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.toast-message {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-message p {
+  color: white;
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.toast-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.toast-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.toast-close:active {
+  transform: scale(0.9);
+}
+
+/* Toast Animation */
+@keyframes slideInRight {
+  from {
+    transform: translateX(420px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(420px);
+    opacity: 0;
+  }
+}
+
+.toast-notification.toast-exit {
+  animation: slideOutRight 0.3s ease-in forwards;
+}
+
+/* ── House Info Banner ── */
+.house-info-banner {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(66, 135, 245, 0.08) 100%);
+  border: 1px solid var(--border-lighter);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin: 1rem 1rem 1.5rem;
+  margin-left: max(1rem, env(safe-area-inset-left));
+  margin-right: max(1rem, env(safe-area-inset-right));
+  box-shadow: 0 2px 8px rgba(66, 135, 245, 0.06);
+  pointer-events: none;
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.banner-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(66, 135, 245, 0.15);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-blue);
+  flex-shrink: 0;
+}
+
+.banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.banner-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.banner-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--heading-color);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 640px) {
+  .banner-content {
+    flex-direction: row;
+    align-items: center;
+  }
 }
