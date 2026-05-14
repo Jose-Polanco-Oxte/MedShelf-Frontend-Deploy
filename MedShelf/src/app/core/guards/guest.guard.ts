@@ -9,5 +9,5 @@ export const guestGuard: CanActivateFn = () => {
   if (authService.isAuthenticated()) {
     return router.createUrlTree(['/']); // ya tiene sesión, manda al home
   }
-  return true; // ✅ no tiene sesión, deja pasar al login
+  return true; // no tiene sesión, deja pasar al login
 };

@@ -1,9 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ThemeService, type Theme } from '../../shared/services/theme.service';
 import { LucideAngularModule, Moon, Sun, Plus } from 'lucide-angular';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../shared/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 interface FamilyProfileViewModel {
   id: string | number;
@@ -43,21 +46,12 @@ type ProfilePayload = ProfilesResponse | ProfilesResponse[] | any[] | any;
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })
-export class Profile implements OnInit {
+export class Profile implements OnInit, OnDestroy {
   currentTheme: Theme = 'light';
   icons = { moon: Moon, sun: Sun, plus: Plus };
-  isLoading: boolean = false;
-  errorMessage: string = '';
-
-  constructor(
-    private themeService: ThemeService,
-    private router: Router,
-    private apiService: ApiService,
-  ) {
-    this.currentTheme = this.themeService.getCurrentTheme();
-  }
-
-  profile: ProfileViewModel = {
+  isLoading = signal(true);
+  errorMessage = signal('');
+  profile = signal<ProfileViewModel>({
     name: '',
     age: '',
     bloodtype: '',
@@ -70,32 +64,78 @@ export class Profile implements OnInit {
       name: '',
       phone: '',
     },
-  };
+  });
+  familyProfiles = signal<FamilyProfileViewModel[]>([]);
+  private destroy$ = new Subject<void>();
+  private loadingTimeout: any;
+  private isFirstLoad = true;
 
-  familyProfiles: FamilyProfileViewModel[] = [];
+  constructor(
+    private themeService: ThemeService,
+    private router: Router,
+    private apiService: ApiService,
+    private authService: AuthService,
+    private activatedRoute: ActivatedRoute,
+  ) {
+    this.currentTheme = this.themeService.getCurrentTheme();
+  }
 
   ngOnInit() {
-    this.loadProfiles();
+    // Cargar perfiles cuando se llega a la ruta
+    this.activatedRoute.url
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadProfiles();
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+    if (this.loadingTimeout) {
+      clearTimeout(this.loadingTimeout);
+    }
   }
 
   loadProfiles() {
-    this.isLoading = true;
-    this.errorMessage = '';
+    this.errorMessage.set('');
+    
+    // En la primera carga, mostrar loading inmediatamente
+    if (this.isFirstLoad) {
+      this.isLoading.set(true);
+      this.isFirstLoad = false;
+    } else {
+      // En cargas posteriores, solo mostrar loading si tarda más de 300ms
+      this.loadingTimeout = setTimeout(() => {
+        this.isLoading.set(true);
+      }, 300);
+    }
 
     this.apiService.get<ProfilesResponse>('/profiles').subscribe({
       next: (response: ProfilesResponse) => {
+        // Cancelar el timeout si existe
+        if (this.loadingTimeout) {
+          clearTimeout(this.loadingTimeout);
+          this.loadingTimeout = null;
+        }
+        this.isLoading.set(false);
         const normalized = this.normalizeProfilesResponse(response);
         const profileSource = normalized.profileSource;
         const familySource = normalized.familySource;
 
-        this.profile = this.mapProfile(profileSource);
-        this.familyProfiles = this.mapFamilyProfiles(familySource);
-        this.isLoading = false;
+        this.profile.set(this.mapProfile(profileSource));
+        this.familyProfiles.set(this.mapFamilyProfiles(familySource));
       },
       error: (error) => {
-        this.isLoading = false;
-        this.errorMessage =
-          error?.error?.message || error?.error?.detail || 'No se pudieron cargar los perfiles.';
+        // Cancelar el timeout en caso de error también
+        if (this.loadingTimeout) {
+          clearTimeout(this.loadingTimeout);
+          this.loadingTimeout = null;
+        }
+        this.isLoading.set(false);
+        this.errorMessage.set(
+          error?.error?.message || error?.error?.detail || 'No se pudieron cargar los perfiles.',
+        );
       },
     });
   }
@@ -238,6 +278,10 @@ export class Profile implements OnInit {
   }
 
   logout() {
-    this.router.navigate(['/login']);
+    this.authService.logout().subscribe({
+      error: (error) => {
+        console.error('Error during logout:', error);
+      },
+    });
   }
 }
