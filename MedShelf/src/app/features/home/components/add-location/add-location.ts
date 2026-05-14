@@ -1,17 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
 import { ApiService } from '../../../../shared/services/api.service';
-
-interface Location {
-  id: number;
-  name: string;
-  description: string;
-  icon: string;
-  quantity: number;
-}
 
 @Component({
   selector: 'app-add-location',
@@ -19,7 +11,7 @@ interface Location {
   templateUrl: './add-location.html',
   styleUrl: './add-location.css',
 })
-export class AddLocation {
+export class AddLocation implements OnInit {
   private router = inject(Router);
   private apiService = inject(ApiService);
 
@@ -34,37 +26,48 @@ export class AddLocation {
   icons_options = ['house', 'office', 'warehouse', 'cabinet', 'drawer'];
   isLoading = false;
   errorMessage = '';
+  houseId: string | null = null;
 
-  // Agregar nueva ubicación al backend
+  ngOnInit() {
+    this.apiService.get<{ id: string; name: string }>('/houses/me').subscribe({
+      next: (house) => {
+        this.houseId = (house as any).id;
+      },
+      error: () => {
+        this.errorMessage = 'No se pudo obtener la casa. Intenta de nuevo.';
+      },
+    });
+  }
+
   addLocation() {
     if (!this.locationData.name.trim()) {
       this.errorMessage = 'Por favor ingresa un nombre para la ubicación';
       return;
     }
 
+    if (!this.houseId) {
+      this.errorMessage = 'No se pudo obtener la casa. Intenta de nuevo.';
+      return;
+    }
+
     this.isLoading = true;
     this.errorMessage = '';
 
-    const houseId = 'cf0107ee-e86d-424f-818a-85ba26ea5335';
-    const endpoint = `/houses/${houseId}/places`;
-    const payload = { name: this.locationData.name };
-
-    this.apiService.post(endpoint, payload).subscribe({
-      next: (response) => {
-        console.log('Ubicación creada exitosamente:', response);
-        this.isLoading = false;
-        // Volver a la página principal
-        this.router.navigate(['/']);
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.errorMessage = 'Error al crear la ubicación. Intenta de nuevo.';
-        console.error('Error:', error);
-      },
-    });
+    this.apiService
+      .post(`/houses/${this.houseId}/places`, { name: this.locationData.name.trim() })
+      .subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.router.navigate(['/']);
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.errorMessage = 'Error al crear la ubicación. Intenta de nuevo.';
+          console.error('Error:', error);
+        },
+      });
   }
 
-  // Cancelar
   cancel() {
     if (!this.isLoading) {
       this.router.navigate(['/']);

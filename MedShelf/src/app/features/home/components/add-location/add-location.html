@@ -29,31 +29,12 @@
         [(ngModel)]="locationData.name"
         name="name"
         placeholder="Ej: Habitación principal"
+        [disabled]="isLoading"
       />
     </div>
 
-    <div class="form-group">
-      <label for="description">Descripción</label>
-      <textarea
-        id="description"
-        [(ngModel)]="locationData.description"
-        name="description"
-        placeholder="Describe dónde se almacenan los medicamentos..."
-        rows="3"
-      ></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="icon">Tipo de ubicación</label>
-      <select id="icon" [(ngModel)]="locationData.icon" name="icon" class="select-input">
-        <option *ngFor="let icon of icons_options" [value]="icon">
-          {{ icon | titlecase }}
-        </option>
-      </select>
-    </div>
-
     <div class="form-actions">
-      <button type="button" class="btn-save" (click)="addLocation()" [disabled]="isLoading">
+      <button type="button" class="btn-save" (click)="addLocation()" [disabled]="isLoading || !houseId">
         {{ isLoading ? 'Guardando...' : 'Guardar Ubicación' }}
       </button>
       <button type="button" class="btn-cancel" (click)="cancel()" [disabled]="isLoading">

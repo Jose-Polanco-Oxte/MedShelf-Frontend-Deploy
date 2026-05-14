@@ -1,33 +1,48 @@
 <div>
   <div class="header">
-    <h2>Bienvenido</h2>
+    <div class="welcome-container">
+      <h2>Bienvenido</h2>
+      <span *ngIf="houseData" class="house-owner">{{ houseData.owner.name.toUpperCase() }}</span>
+    </div>
   </div>
 
-  <div *ngIf="isLoading" style="text-align: center; padding: 20px">
-    <p>Cargando datos...</p>
-  </div>
-
+  <!-- Error Toast Notification -->
   <div
     *ngIf="error"
-    style="color: red; padding: 20px; background-color: #ffe6e6; border-radius: 8px"
+    [ngClass]="{ 'toast-notification': true, 'toast-error': true, 'toast-exit': isToastExiting }"
   >
-    <p>{{ error }}</p>
+    <div class="toast-content">
+      <lucide-icon name="alert-circle" [img]="icons.alertCircle" [size]="20" class="toast-icon"></lucide-icon>
+      <div class="toast-message">
+        <p>{{ error }}</p>
+      </div>
+      <button class="toast-close" (click)="closeError()" type="button">
+        <lucide-icon name="x" [img]="icons.x" [size]="16"></lucide-icon>
+      </button>
+    </div>
   </div>
 
-  <div
-    *ngIf="houseData && !isLoading"
-    style="padding: 20px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 20px"
-  >
-    <h3>Casa: {{ houseData.name }}</h3>
-    <p>{{ houseData.description }}</p>
-    <small>ID: {{ houseData.id }}</small>
+  <!-- House Info Banner -->
+  <div *ngIf="houseData && !isLoading" class="house-info-banner">
+    <div class="banner-content">
+      <div class="banner-icon">
+        <lucide-icon name="building-2" [img]="icons.building" [size]="28"></lucide-icon>
+      </div>
+      <div class="banner-text">
+        <p class="banner-label">Tu casa</p>
+        <h3 class="banner-name">{{ houseData.name }}</h3>
+      </div>
+    </div>
   </div>
 
+  <!-- Perfiles -->
   <div class="family-section">
     <h2 class="section-title">PERFILES DE FAMILIA</h2>
-
     <div class="card-container">
-      <div *ngFor="let profile of profiles; trackBy: trackByProfile" class="profile-card">
+      <div
+        *ngFor="let profile of profiles; trackBy: trackByProfile"
+        class="profile-card"
+      >
         <div class="avatar">
           <span class="initials">{{ profile.initials }}</span>
         </div>
@@ -37,46 +52,57 @@
     </div>
   </div>
 
+  <!-- Lugares -->
   <div class="locations-section">
     <h2 class="section-title">LUGARES DE ALMACENAMIENTO</h2>
 
     <div class="grid-container">
-      <div
-        *ngFor="let location of locations; trackBy: trackByLocation"
-        class="location-card"
-        (click)="loadLocationDetails(location.id)"
-        style="position: relative"
-      >
-        <button
-          class="btn-delete-location"
-          (click)="deleteLocation(location.id, $event)"
-          title="Eliminar ubicación"
-          type="button"
-        >
-          <lucide-icon name="x" [img]="icons.x" [size]="18"></lucide-icon>
-        </button>
-        <div class="icon">
-          <lucide-icon name="home" [img]="icons.house" [size]="24"> </lucide-icon>
+      <ng-container *ngIf="isLoading">
+        <!-- Skeletons mientras carga -->
+        <div class="location-card" *ngFor="let i of [1, 2, 3]" style="opacity: 0.4; pointer-events: none;">
+          <div class="icon"></div>
+          <div class="location-info">
+            <h3>Cargando…</h3>
+          </div>
         </div>
-        <div class="location-info">
-          <h3>{{ location.name }}</h3>
-          <span>{{ location.description }}</span>
-          <span class="count">{{ location.quantity }} medicamentos</span>
-        </div>
-      </div>
+      </ng-container>
 
-      <div *ngIf="!isLoading && locations.length === 0" class="location-card">
-        <div class="location-info">
-          <h3>No hay locations</h3>
-          <span>El backend no devolvió elementos en items.</span>
+      <ng-container *ngIf="!isLoading">
+        <div
+          *ngFor="let location of locations; trackBy: trackByLocation"
+          class="location-card"
+          (click)="loadLocationDetails(location.id)"
+          style="position: relative"
+        >
+          <button
+            class="btn-delete-location"
+            (click)="deleteLocation(location.id, $event)"
+            title="Eliminar ubicación"
+            type="button"
+          >
+            <lucide-icon name="x" [img]="icons.x" [size]="18"></lucide-icon>
+          </button>
+          <div class="icon">
+            <lucide-icon name="home" [img]="icons.house" [size]="24"></lucide-icon>
+          </div>
+          <div class="location-info">
+            <h3>{{ location.name }}</h3>
+            <span class="count">{{ location.quantity }} medicamento{{ location.quantity !== 1 ? 's' : '' }}</span>
+          </div>
         </div>
-      </div>
+
+        <div *ngIf="locations.length === 0" class="location-card">
+          <div class="location-info">
+            <h3>Sin ubicaciones</h3>
+            <span>Agrega tu primer lugar de almacenamiento.</span>
+          </div>
+        </div>
+      </ng-container>
 
       <button class="btn-add-location" routerLink="add-location">
-        <lucide-icon name="plus" [img]="icons.plus" [size]="18"> </lucide-icon>
+        <lucide-icon name="plus" [img]="icons.plus" [size]="18"></lucide-icon>
         Nueva ubicación
       </button>
     </div>
   </div>
 </div>
-

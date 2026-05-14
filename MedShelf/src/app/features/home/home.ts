@@ -1,23 +1,26 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, House, Plus, X, InfoIcon } from 'lucide-angular';
+import { LucideAngularModule, House, Plus, X, AlertCircle, Building2 } from 'lucide-angular';
 import { ThemeService } from '../../shared/services/theme.service';
 import { ApiService } from '../../shared/services/api.service';
 import { ProfilesService } from '../../core/services/profiles.service';
 import { RouterLink } from '@angular/router';
 
+interface HouseOwner {
+  id: string;
+  name: string;
+}
+
 interface HouseResponse {
   id: string;
   name: string;
-  description?: string;
-  members?: any[];
-  locations?: any[];
+  owner: HouseOwner;
+  createdAt: string;
 }
 
 interface LocationViewModel {
   id: string;
   name: string;
-  description: string;
   quantity: number;
 }
 
@@ -46,6 +49,16 @@ export class Home implements OnInit {
   profiles: ProfileViewModel[] = [];
   isLoading = true;
   error: string | null = null;
+  isToastExiting = false;
+  private errorTimeoutId: any;
+
+  icons = {
+    house: House,
+    plus: Plus,
+    x: X,
+    alertCircle: AlertCircle,
+    building: Building2,
+  };
 
   ngOnInit() {
     this.themeService.theme$.subscribe();
@@ -54,76 +67,78 @@ export class Home implements OnInit {
   }
 
   trackByLocation(index: number, item: LocationViewModel) {
-    return item && item.id ? item.id : index;
+    return item?.id ?? index;
   }
 
-  trackByProfile(index: number, item: any) {
-    return item && item.id ? item.id : index;
+  trackByProfile(index: number, item: ProfileViewModel) {
+    return item?.id ?? index;
   }
 
   loadHouseData() {
-    const houseId = 'cf0107ee-e86d-424f-818a-85ba26ea5335';
-    const houseEndpoint = `/houses/${houseId}`;
-    const locationsEndpoint = `/houses/${houseId}/places`;
-
-    this.apiService.get<HouseResponse>(houseEndpoint).subscribe({
+    // 1. Primero obtenemos la casa del usuario autenticado
+    this.apiService.get<HouseResponse>('/houses/me').subscribe({
       next: (house) => {
         this.houseData = house as unknown as HouseResponse;
         this.cdr.detectChanges();
-        console.log('Datos de la casa:', house);
+        // 2. Con el id real cargamos los lugares
+        this.loadPlaces(this.houseData.id);
       },
       error: (error) => {
-        this.error = 'Error cargando los datos de la casa';
         console.error('Error cargando la casa:', error);
+        this.isLoading = false;
+        this.showError('Error cargando los datos de la casa');
       },
     });
+  }
 
+  private loadPlaces(houseId: string) {
     this.apiService
-      .get<{ items?: Array<{ id?: string; name?: string }> }>(locationsEndpoint)
+      .get<{ items: Array<{ id: string; name: string }> }>(`/houses/${houseId}/places`)
       .subscribe({
-        next: (locationsResponse) => {
-          const response = locationsResponse as {
-            items?: Array<{ id?: string; name?: string }>;
-          };
-          const items = response.items ?? [];
-          console.log('Datos de las ubicaciones (raw):', items);
-          this.locations = items.map((location: { id?: string; name?: string }) => ({
-            id: location.id ?? crypto.randomUUID(),
-            name: location.name ?? 'Ubicación sin nombre',
-            description: 'Ubicación sin descripción',
+        next: (response) => {
+          const items = (response as any).items ?? [];
+          this.locations = items.map((loc: { id: string; name: string }) => ({
+            id: loc.id,
+            name: loc.name,
             quantity: 0,
           }));
-          console.log('Datos de las ubicaciones (normalizados):', this.locations);
           this.cdr.detectChanges();
+
+          // 3. Para cada lugar obtenemos el conteo de items
+          this.locations.forEach((loc) => this.loadItemCount(loc.id));
         },
         error: (error) => {
-          this.error = 'Error cargando las ubicaciones';
-          console.error('Error cargando las ubicaciones:', error);
+          console.error('Error cargando los lugares:', error);
+          this.showError('Error cargando las ubicaciones');
         },
         complete: () => {
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
       });
   }
 
+  // Carga el conteo real de medicamentos usando /places/{placeId}/items
   loadLocationDetails(locationId: string) {
-    const endpoint = `/places/${locationId}`;
-    this.apiService.get<{ items?: any[] }>(endpoint).subscribe({
-      next: (response) => {
-        const payload = response as { items?: any[] };
-        const items = payload.items ?? [];
-        const quantity = items.length;
-        const locationIndex = this.locations.findIndex((loc) => loc.id === locationId);
-        if (locationIndex !== -1) {
-          this.locations[locationIndex].quantity = quantity;
-          this.cdr.detectChanges();
-        }
-        console.log(`Detalles de la ubicación ${locationId}:`, response);
-      },
-      error: (error) => {
-        console.error(`Error cargando los detalles de la ubicación ${locationId}:`, error);
-      },
-    });
+    this.loadItemCount(locationId);
+  }
+
+  private loadItemCount(placeId: string) {
+    this.apiService
+      .get<{ items: any[]; nextCursor?: string }>(`/places/${placeId}/items`)
+      .subscribe({
+        next: (response) => {
+          const items = (response as any).items ?? [];
+          const idx = this.locations.findIndex((l) => l.id === placeId);
+          if (idx !== -1) {
+            this.locations[idx] = { ...this.locations[idx], quantity: items.length };
+            this.cdr.detectChanges();
+          }
+        },
+        error: (error) => {
+          console.error(`Error cargando items del lugar ${placeId}:`, error);
+        },
+      });
   }
 
   deleteLocation(locationId: string, event: Event) {
@@ -133,20 +148,14 @@ export class Home implements OnInit {
       return;
     }
 
-    const houseId = 'cf0107ee-e86d-424f-818a-85ba26ea5335';
-    const endpoint = `/places/${locationId}`;
-    const options = { headers: { 'X-House-Id': houseId } };
-
-    this.apiService.delete(endpoint, options).subscribe({
-      next: (response) => {
-        console.log('Ubicación eliminada exitosamente:', response);
-        // Remover la ubicación del array
+    this.apiService.delete(`/places/${locationId}`).subscribe({
+      next: () => {
         this.locations = this.locations.filter((loc) => loc.id !== locationId);
         this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error eliminando la ubicación:', error);
-        alert('Error al eliminar la ubicación. Intenta de nuevo.');
+        this.showError('Error al eliminar la ubicación. Intenta de nuevo.');
       },
     });
   }
@@ -159,25 +168,38 @@ export class Home implements OnInit {
           name: profile.name,
           initials: profile.name
             .split(' ')
-            .map((n) => n[0])
+            .map((n: string) => n[0])
             .join('')
-            .toUpperCase(),
+            .toUpperCase()
+            .slice(0, 2),
           email: profile.email,
           relationship: '',
         }));
-        console.log('Perfiles cargados:', this.profiles);
         this.cdr.detectChanges();
       },
       error: (error) => {
-        this.error = 'Error cargando los perfiles';
         console.error('Error cargando los perfiles:', error);
+        this.showError('Error cargando los perfiles');
       },
     });
   }
 
-  icons = {
-    house: House,
-    plus: Plus,
-    x: X,
-  };
+  closeError() {
+    if (this.errorTimeoutId) clearTimeout(this.errorTimeoutId);
+    this.isToastExiting = true;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.error = null;
+      this.isToastExiting = false;
+      this.cdr.detectChanges();
+    }, 300);
+  }
+
+  private showError(message: string) {
+    if (this.errorTimeoutId) clearTimeout(this.errorTimeoutId);
+    this.error = message;
+    this.isToastExiting = false;
+    this.cdr.detectChanges();
+    this.errorTimeoutId = setTimeout(() => this.closeError(), 4000);
+  }
 }
