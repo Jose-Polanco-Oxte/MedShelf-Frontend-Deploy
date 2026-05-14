@@ -73,15 +73,15 @@ export class PlacesService {
   }
 
   getPlaceDetails(placeId: string) {
-    return this.api.get<PlaceResponse>(`/places/${placeId}`).pipe(
-      tap((place) => this._selectedPlace.set(place)),
-    );
+    return this.api
+      .get<PlaceResponse>(`/places/${placeId}`)
+      .pipe(tap((place) => this._selectedPlace.set(place)));
   }
 
   createPlace(houseId: string, data: CreatePlaceRequest) {
-    return this.api.post<PlaceResponse>(`/houses/${houseId}/places`, data).pipe(
-      tap((place) => this._places.update((prev) => [place, ...prev])),
-    );
+    return this.api
+      .post<PlaceResponse>(`/houses/${houseId}/places`, data)
+      .pipe(tap((place) => this._places.update((prev) => [place, ...prev])));
   }
 
   updatePlace(placeId: string, data: UpdatePlaceRequest) {

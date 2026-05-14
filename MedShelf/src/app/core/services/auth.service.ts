@@ -5,6 +5,13 @@ import { tap, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiService } from '../../shared/services/api.service';
 
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  createdAt: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private apiUrl = environment.apiUrl;
@@ -46,7 +53,7 @@ export class AuthService {
   //refrsh?
 
   hydrate() {
-    return this.api.get(`/auth/me`).pipe(
+    return this.api.get<User>(`/auth/me`).pipe(
       tap((user) => {
         this.isAuthenticated.set(true);
         console.log('Usuario autenticado:', user);

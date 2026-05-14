@@ -4,166 +4,156 @@
     <h2>Botiquín</h2>
   </div>
 
-    <!-- Sección de Estadísticas -->
-    <section class="stats-section">
-      <div class="stat-card thumbs-up-border">
-        <div class="stat-icon">
-          <lucide-angular
-            [img]="icons.thumbsUp"
-            size="80"
-            class="thumbs-up"
-          ></lucide-angular>
+  <!-- Sección de Estadísticas -->
+  <section class="stats-section">
+    <div class="stat-card thumbs-up-border">
+      <div class="stat-icon">
+        <lucide-angular [img]="icons.thumbsUp" size="80" class="thumbs-up"></lucide-angular>
+      </div>
+      <div class="stat-content">
+        <p class="stat-label">Vigentes</p>
+        <p class="stat-value thumbs-up">{{ valid() }}</p>
+        <p class="stat-info">Estado óptimo de conservación</p>
+      </div>
+    </div>
+
+    <div class="stat-card clock-border">
+      <div class="stat-icon">
+        <lucide-angular [img]="icons.clock" size="80" class="clock"></lucide-angular>
+      </div>
+      <div class="stat-content">
+        <p class="stat-label">Próximos a vencer</p>
+        <p class="stat-value clock">{{ expiringNext() }}</p>
+        <p class="stat-info">Vencimiento en los próximos 30 días</p>
+      </div>
+    </div>
+
+    <div class="stat-card alert-border">
+      <div class="stat-icon">
+        <lucide-angular [img]="icons.alert" size="80" class="alert"></lucide-angular>
+      </div>
+      <div class="stat-content">
+        <p class="stat-label">Caducados</p>
+        <p class="stat-value alert">{{ expired() }}</p>
+        <p class="stat-info">Requiere retiro de inmediato</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección de Búsqueda -->
+  <section class="search-section">
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Buscar medicamento..."
+      [ngModel]="searchTerm()"
+      (ngModelChange)="searchTerm.set($event); filterMedicines()"
+    />
+  </section>
+
+  <!-- Lista de Medicamentos -->
+  <section class="medications-section">
+    @if (selectedMedicinesCount() > 0) {
+      <div class="selection-bar">
+        <div class="selection-info">
+          <span
+            >{{ selectedMedicinesCount() }}
+            {{ selectedMedicinesCount() === 1 ? 'medicamento' : 'medicamentos' }}
+            seleccionado(s)</span
+          >
         </div>
-        <div class="stat-content">
-          <p class="stat-label">Vigentes</p>
-          <p class="stat-value thumbs-up">{{ valid }}</p>
-          <p class="stat-info">Estado óptimo de conservación</p>
+        <div class="selection-actions">
+          <button class="btn-clear-selection" (click)="clearSelection()">Deseleccionar</button>
+          <button class="btn-delete-selected" (click)="deleteSelectedMedicines()">
+            Eliminar Seleccionados
+          </button>
         </div>
       </div>
+    }
+    <div class="medications-list">
+      @for (med of filteredMedicines(); track med.id) {
+        <div
+          class="medication-card"
+          [ngClass]="'status-' + med.status"
+          [class.selected]="isMedicineSelected(med.id)"
+          (click)="selectedMedicinesCount() > 0 && toggleSelectMedicine(med.id)"
+          [style.cursor]="selectedMedicinesCount() > 0 ? 'pointer' : 'default'"
+        >
+          <div class="med-header">
+            @if (isMedicineSelected(med.id)) {
+              <div class="med-checkbox">
+                <lucide-angular
+                  [img]="icons.checkSquare"
+                  size="20"
+                  class="checkbox-icon"
+                ></lucide-angular>
+              </div>
+            }
+            <div class="med-title-section">
+              <h3>{{ med.name }}</h3>
+              <span class="med-status">{{ med.status }}</span>
+            </div>
 
-      <div class="stat-card clock-border">
-        <div class="stat-icon">
-          <lucide-angular 
-          [img]="icons.clock" 
-          size="80" 
-          class="clock"
-          ></lucide-angular>
-        </div>
-        <div class="stat-content">
-          <p class="stat-label">Próximos a vencer</p>
-          <p class="stat-value clock">{{ expiringNext }}</p>
-          <p class="stat-info">Vencimiento en los próximos 30 días</p>
-        </div>
-      </div>
+            <!-- Menú Hamburguesa -->
+            <div class="med-actions-container">
+              <button
+                class="btn-med-menu"
+                (click)="toggleMedDropdown(med.id); $event.stopPropagation()"
+                title="Opciones"
+              >
+                <lucide-angular [img]="icons.moreVertical" size="20"></lucide-angular>
+              </button>
 
-      <div class="stat-card alert-border">
-        <div class="stat-icon">
-          <lucide-angular 
-          [img]="icons.alert" 
-          size="80" 
-          class="alert"
-          ></lucide-angular>
-        </div>
-        <div class="stat-content">
-          <p class="stat-label">Caducados</p>
-          <p class="stat-value alert">{{ expired }}</p>
-          <p class="stat-info">Requiere retiro de inmediato</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Sección de Búsqueda -->
-    <section class="search-section">
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Buscar medicamento..."
-        [(ngModel)]="searchTerm"
-        (ngModelChange)="filterMedicines()"
-      />
-    </section>
-
-    <!-- Lista de Medicamentos -->
-    <section class="medications-section">
-      @if (selectedMedicinesCount > 0) {
-        <div class="selection-bar">
-          <div class="selection-info">
-            <span
-              >{{ selectedMedicinesCount }}
-              {{ selectedMedicinesCount === 1 ? 'medicamento' : 'medicamentos' }}
-              seleccionado(s)</span
-            >
+              <div class="med-dropdown" [class.active]="isMedDropdownOpen(med.id)">
+                <button
+                  class="med-dropdown-item"
+                  (click)="toggleSelectMedicine(med.id); $event.stopPropagation()"
+                >
+                  <lucide-angular [img]="icons.checkSquare" size="20"></lucide-angular>
+                  <span>{{ isMedicineSelected(med.id) ? 'Deseleccionar' : 'Seleccionar' }}</span>
+                </button>
+                <button
+                  class="med-dropdown-item"
+                  (click)="editMedicine(med.id); $event.stopPropagation()"
+                >
+                  <lucide-angular [img]="icons.pencil" size="20"></lucide-angular>
+                  <span>Editar</span>
+                </button>
+                <button
+                  class="med-dropdown-item med-dropdown-delete"
+                  (click)="deleteMedicine(med.id); $event.stopPropagation()"
+                >
+                  <lucide-angular [img]="icons.trash" size="20"></lucide-angular>
+                  <span>Eliminar</span>
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="selection-actions">
-            <button class="btn-clear-selection" (click)="clearSelection()">Deseleccionar</button>
-            <button class="btn-delete-selected" (click)="deleteSelectedMedicines()">
-              Eliminar Seleccionados
-            </button>
+
+          <div class="med-details">
+            <div class="med-info">
+              <p><strong>Cantidad:</strong> {{ med.quantity }} {{ med.unit }}</p>
+              <p><strong>Dosis:</strong> {{ med.dosage }}</p>
+            </div>
+
+            <div class="med-expiry">
+              <p><strong>Vencimiento:</strong></p>
+              <p class="expiry-date">{{ med.expiryDate | date: 'dd/MM/yyyy' }}</p>
+            </div>
           </div>
         </div>
       }
-      <div class="medications-list">
-        @for (med of filteredMedicines; track med.id) {
-          <div
-            class="medication-card"
-            [ngClass]="'status-' + med.status"
-            [class.selected]="isMedicineSelected(med.id)"
-            (click)="selectedMedicinesCount > 0 && toggleSelectMedicine(med.id)"
-            [style.cursor]="selectedMedicinesCount > 0 ? 'pointer' : 'default'"
-          >
-            <div class="med-header">
-              @if (isMedicineSelected(med.id)) {
-                <div class="med-checkbox">
-                  <lucide-angular [img]="icons.checkSquare" size="20" class="checkbox-icon"></lucide-angular>
-                </div>
-              }
-              <div class="med-title-section">
-                <h3>{{ med.name }}</h3>
-                <span class="med-status">{{ med.status }}</span>
-              </div>
 
-              <!-- Menú Hamburguesa -->
-              <div class="med-actions-container">
-                <button
-                  class="btn-med-menu"
-                  (click)="toggleMedDropdown(med.id); $event.stopPropagation()"
-                  title="Opciones"
-                >
-                  <lucide-angular [img]="icons.moreVertical" size="20"></lucide-angular>
-                </button>
+      @if (filteredMedicines().length === 0) {
+        <div class="no-results">
+          <p>No se encontraron medicamentos</p>
+        </div>
+      }
+    </div>
+  </section>
 
-                <div class="med-dropdown" [class.active]="isMedDropdownOpen(med.id)">
-                  <button
-                    class="med-dropdown-item"
-                    (click)="toggleSelectMedicine(med.id); $event.stopPropagation()"
-                  >
-                    <lucide-angular [img]="icons.checkSquare" size="20"></lucide-angular>
-                    <span>{{
-                      isMedicineSelected(med.id) ? 'Deseleccionar' : 'Seleccionar'
-                    }}</span>
-                  </button>
-                  <button
-                    class="med-dropdown-item"
-                    (click)="editMedicine(med.id); $event.stopPropagation()"
-                  >
-                    <lucide-angular [img]="icons.pencil" size="20"></lucide-angular>
-                    <span>Editar</span>
-                  </button>
-                  <button
-                    class="med-dropdown-item med-dropdown-delete"
-                    (click)="deleteMedicine(med.id); $event.stopPropagation()"
-                  >
-                    <lucide-angular [img]="icons.trash" size="20"></lucide-angular>
-                    <span>Eliminar</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="med-details">
-              <div class="med-info">
-                <p><strong>Cantidad:</strong> {{ med.quantity }} {{ med.unit }}</p>
-                <p><strong>Dosis:</strong> {{ med.dosage }}</p>
-              </div>
-
-              <div class="med-expiry">
-                <p><strong>Vencimiento:</strong></p>
-                <p class="expiry-date">{{ med.expiryDate | date: 'dd/MM/yyyy' }}</p>
-              </div>
-            </div>
-          </div>
-        }
-
-        @if (filteredMedicines.length === 0) {
-          <div class="no-results">
-            <p>No se encontraron medicamentos</p>
-          </div>
-        }
-      </div>
-    </section>
-
-    <!-- Botón de Acción Flotante -->
-    <a class="fab" routerLink="add-medicine" title="Agregar medicamento">
-      <lucide-angular [img]="icons.plus" size="28" class="fab-icon"></lucide-angular>
-    </a>
-  </main>
+  <!-- Botón de Acción Flotante -->
+  <a class="fab" routerLink="add-medicine" title="Agregar medicamento">
+    <lucide-angular [img]="icons.plus" size="28" class="fab-icon"></lucide-angular>
+  </a>
+</main>
