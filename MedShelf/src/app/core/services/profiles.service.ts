@@ -11,25 +11,28 @@ interface ListProfilesParams {
 
 interface CreateProfileRequest {
   name: string;
-  relationship: string;
+  birthDate: string;
+  allergies?: string[];
 }
 
-export interface ProfileResponse {
+export interface Profile {
   id: string;
-  email: string;
   name: string;
+  relationship?: string;
+  birthDate: string;
+  allergies: string[];
   createdAt: string;
 }
 
 interface ProfilesListResponse {
-  items: ProfileResponse[];
+  items: Profile[];
   nextCursor: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ProfilesService {
-  private _profiles = signal<ProfileResponse[]>([]);
-  private _selectedProfile = signal<ProfileResponse | null>(null);
+  private _profiles = signal<Profile[]>([]);
+  private _selectedProfile = signal<Profile | null>(null);
   private _nextCursor = signal<string | null>(null);
 
   readonly profiles = this._profiles.asReadonly();
@@ -61,13 +64,13 @@ export class ProfilesService {
 
   getProfileDetails(profileId: string) {
     return this.api
-      .get<ProfileResponse>(`/profiles/${profileId}`)
+      .get<Profile>(`/profiles/${profileId}`)
       .pipe(tap((profile) => this._selectedProfile.set(profile)));
   }
 
   createProfile(data: CreateProfileRequest) {
     return this.api
-      .post<ProfileResponse>('/profiles', data)
+      .post<Profile>('/profiles', data)
       .pipe(tap((profile) => this._profiles.update((prev) => [profile, ...prev])));
   }
 }

@@ -1,0 +1,149 @@
+@if (isLoading()) {
+  <div class="account-container skeleton-loading">
+    <!-- Skeleton Perfil principal -->
+    <div class="main-account">
+      <div class="avatar-wrapper">
+        <div class="avatar skeleton"></div>
+      </div>
+      <div class="skeleton-line skeleton-title"></div>
+      <div class="account-badges">
+        <div class="skeleton-badge"></div>
+      </div>
+    </div>
+
+    <!-- Skeleton Información -->
+    <div class="info-section">
+      <p class="section-title">INFORMACIÓN</p>
+      <div class="info-card">
+        <div class="info-item" *ngFor="let i of [1,2]">
+          <div class="skeleton-line skeleton-info-label"></div>
+          <div class="skeleton-line skeleton-info-value"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skeleton Familia -->
+    <div class="accounts-section">
+      <p class="section-title">FAMILIA</p>
+      <div class="accounts-list">
+        <div class="account-card skeleton-card" *ngFor="let i of [1,2,3]">
+          <div class="avatar small skeleton"></div>
+          <div class="skeleton-line skeleton-account-name"></div>
+          <div class="skeleton-line skeleton-account-relation"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skeleton Ajustes -->
+    <div class="account-section">
+      <p class="section-title">AJUSTES</p>
+      <div class="skeleton-line skeleton-button"></div>
+      <div class="skeleton-line skeleton-button"></div>
+      <div class="skeleton-line skeleton-button"></div>
+    </div>
+  </div>
+}
+
+@if (!isLoading() && !errorMessage() && accountInfo()) {
+  <div class="account-container">    
+    <!-- Perfil principal - Información de Cuenta -->
+    <div class="main-account">
+      <div class="avatar-wrapper">
+        <div class="avatar">
+          <span>{{ (accountInfo()?.name?.charAt(0) || 'U').toUpperCase() }}</span>
+        </div>
+      </div>
+      <h2 class="account-name">{{ accountInfo()?.name || 'Usuario' }}</h2>
+      <p style="text-align: center; color: var(--text-secondary); font-size: 14px;">
+        {{ accountInfo()?.email }}
+      </p>
+    </div>
+
+    <!-- Información de la Cuenta -->
+    <div class="info-section">
+      <p class="section-title">INFORMACIÓN DE CUENTA</p>
+      <div class="info-card">
+        <div class="info-item">
+          <span class="label">Nombre</span>
+          <span class="value">{{ accountInfo()?.name || 'Por definir' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Correo electrónico</span>
+          <span class="value">{{ accountInfo()?.email || 'Por definir' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Fecha de nacimiento</span>
+          <span class="value">
+            @if (accountInfo()?.birthDate) {
+              {{ accountInfo()?.birthDate | date: 'dd/MM/yyyy' }}
+            } @else {
+              <span style="color: var(--text-secondary);">Por definir</span>
+            }
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="label">Edad</span>
+          <span class="value">
+            @if (accountInfo()?.age) {
+              {{ accountInfo()?.age }} años
+            } @else {
+              <span style="color: var(--text-secondary);">Por definir</span>
+            }
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="label">Alergias</span>
+          <span class="value">
+            @if (accountInfo()?.allergies && accountInfo()!.allergies!.length > 0) {
+              {{ accountInfo()?.allergies?.join(', ') }}
+            } @else {
+              <span style="color: var(--text-secondary);">Por definir</span>
+            }
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección Familia -->
+    <div class="accounts-section">
+      <p class="section-title">FAMILIA</p>
+      <div class="accounts-list">
+        @for (account of familyProfiles(); track $index) {
+          <div class="account-card">
+            <div class="avatar small">
+              <span>{{ getInitial(account.name) }}</span>
+            </div>
+            <p>{{ account.name }}</p>
+            <small>{{ account.relation || 'Familiar' }}</small>
+          </div>
+        }
+        <div class="account-card">
+          <button class="avatar small add-account" routerLink="add-family" title="Añadir perfil familiar">
+            <lucide-angular [img]="icons.plus" size="24"></lucide-angular>
+          </button>
+          <p>Añadir perfil</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ajustes -->
+    <div class="account-section">
+      <p class="section-title">AJUSTES</p>
+      <button 
+        class="btn btn-primary"
+        routerLink="edit"
+        style="margin: 20px 0;">
+        Editar información
+      </button>
+      <button class="btn-theme" (click)="toggleTheme()">
+        @if (currentTheme === 'light') {
+          <lucide-angular [img]="icons.moon" size="18"></lucide-angular>
+        } @else {
+          <lucide-angular [img]="icons.sun" size="18"></lucide-angular>
+        }
+        <span>{{ currentTheme === 'light' ? 'Tema Oscuro' : 'Tema Claro' }}</span>
+      </button>
+      <button class="btn-logout" (click)="logout()">Cerrar sesión</button>
+    </div>
+  </div>
+}
