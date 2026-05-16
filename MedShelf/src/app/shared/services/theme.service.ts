@@ -1,4 +1,5 @@
 import { Injectable, signal, effect } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 
 export type Theme = 'light' | 'dark';
 
@@ -8,11 +9,13 @@ export type Theme = 'light' | 'dark';
 export class ThemeService {
   private readonly THEME_KEY = 'medshelf-theme';
   private themeSignal = signal<Theme>(this.getInitialTheme());
+  public theme$ = new BehaviorSubject<Theme>(this.themeSignal());
 
   constructor() {
     effect(() => {
       const theme = this.themeSignal();
       this.applyTheme(theme);
+      this.theme$.next(theme);
       localStorage.setItem(this.THEME_KEY, theme);
     });
   }

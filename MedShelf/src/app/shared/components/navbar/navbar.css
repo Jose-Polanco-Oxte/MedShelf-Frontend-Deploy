@@ -1,5 +1,38 @@
 .navbar {
   position: fixed;
   bottom: 0;
+  left: 0;
   width: 100%;
+  height: var(--navbar-height);
+  background: var(--navbar-bg);
+  border-top: 1px solid var(--border-lighter);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+  min-width: 60px;
+  min-height: 60px;
+  flex: 1;
+  transition: all 0.2s ease;
+}
+
+.nav-item .icon {
+  font-size: 1.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.nav-item.active {
+  color: var(--primary-blue);
+  font-weight: 600;
 }

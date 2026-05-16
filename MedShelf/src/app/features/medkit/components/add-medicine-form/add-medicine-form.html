@@ -1,0 +1,100 @@
+<form class="form" (ngSubmit)="saveMedicine()">
+  <div class="fab-return">
+    <a routerLink="/medkit" title="Volver">
+      <lucide-angular [img]="icons.arrowLeft" size="24" class="fab-icon"></lucide-angular>
+    </a>
+  </div>
+  <h2>Agregar medicamento</h2>
+
+  @if (errorMessage) {
+    <div class="form-error">
+      <p>{{ errorMessage }}</p>
+    </div>
+  }
+
+  <!-- Combobox de productos -->
+  <div class="form-group">
+    <label for="product-search">Producto</label>
+    <div class="combobox" id="product-combobox">
+      <div class="combobox-input-wrapper" (click)="openDropdown()">
+        <input
+          id="product-search"
+          type="text"
+          class="combobox-input"
+          placeholder="Buscar producto..."
+          [value]="productSearchText"
+          (input)="onSearchChange($any($event.target).value)"
+          autocomplete="off"
+        />
+        @if (formData.productId) {
+          <button
+            type="button"
+            class="combobox-clear"
+            (click)="clearProduct($event)"
+            title="Limpiar"
+          >
+            <lucide-angular [img]="icons.x" size="14"></lucide-angular>
+          </button>
+        } @else {
+          <lucide-angular
+            [img]="icons.chevronDown"
+            size="16"
+            class="combobox-arrow"
+          ></lucide-angular>
+        }
+      </div>
+
+      @if (isDropdownOpen) {
+        <div class="combobox-dropdown">
+          @if (isLoadingProducts) {
+            <div class="combobox-state">Cargando...</div>
+          } @else if (products.length === 0) {
+            <div class="combobox-state">Sin resultados</div>
+          } @else {
+            <ul class="combobox-list">
+              @for (product of products; track product.id) {
+                <li
+                  class="combobox-option"
+                  [class.selected]="formData.productId === product.id"
+                  (click)="selectProduct(product)"
+                >
+                  {{ product.name }}
+                </li>
+              }
+            </ul>
+            @if (hasMore) {
+              <button
+                type="button"
+                class="combobox-load-more"
+                [disabled]="isLoadingMore"
+                (click)="loadMore()"
+              >
+                {{ isLoadingMore ? 'Cargando...' : 'Cargar más' }}
+              </button>
+            }
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Lugar</label>
+    <select name="placeId" id="placeId" [(ngModel)]="formData.placeId" required>
+      <option value="">Selecciona un lugar</option>
+      @for (place of places; track place.id) {
+        <option [value]="place.id">{{ place.name }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Fecha de vencimiento</label>
+    <input type="date" name="expirationDate" [(ngModel)]="formData.expirationDate" required />
+  </div>
+
+  <button type="submit" class="submit-btn" [disabled]="isLoading">
+    <lucide-angular [img]="icons.check" size="20" class="btn-icon"></lucide-angular>
+    {{ isLoading ? 'Guardando...' : 'Guardar Medicamento' }}
+  </button>
+</form>

@@ -1,1 +1,21 @@
-<p>navbar works!</p>
+<nav class="navbar">
+  <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
+    <lucide-angular [img]="icons.home" size="22"></lucide-angular>
+    <span>Inicio</span>
+  </a>
+
+  <a routerLink="/medkit" routerLinkActive="active" class="nav-item">
+    <lucide-angular [img]="icons.dashboard" size="22"></lucide-angular>
+    <span>Botiquín</span>
+  </a>
+
+  <a routerLink="/meds" routerLinkActive="active" class="nav-item">
+    <lucide-angular [img]="icons.meds" size="22"></lucide-angular>
+    <span>Tratamientos</span>
+  </a>
+
+  <a routerLink="/profile" routerLinkActive="active" class="nav-item">
+    <lucide-angular [img]="icons.profile" size="22"></lucide-angular>
+    <span>Perfil</span>
+  </a>
+</nav>

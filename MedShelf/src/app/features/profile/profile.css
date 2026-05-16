@@ -1,0 +1,392 @@
+/* ── Base ── */
+.profile-container {
+  padding: 1.25rem 1rem 100px;
+  background: var(--page-background);
+  min-height: 100vh;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  text-align: center;
+}
+
+.state-banner {
+  margin: 1rem 0;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-lighter);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.state-error {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+/* ── Perfil principal ── */
+.main-profile {
+  margin-top: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.avatar-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--avatar-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  border: 3px solid var(--card-bg);
+  box-shadow: 0 0 0 2px var(--avatar-border);
+}
+
+.avatar.small {
+  width: 56px;
+  height: 56px;
+  font-size: 1.25rem;
+  border: none;
+  box-shadow: none;
+}
+
+.profile-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--heading-color);
+  margin: 0 0 0.5rem;
+}
+
+.profile-sub {
+  font-size: 0.95rem;
+  color: var(--text-tertiary);
+  margin: 0 0 1rem;
+}
+
+.profile-badges {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.badge-blue {
+  background: var(--avatar-bg);
+  color: var(--avatar-text);
+}
+
+.badge-red {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+/* ── Stats ── */
+.stats-row {
+  display: flex;
+  align-items: center;
+  background: var(--card-bg);
+  border: 1px solid var(--border-lighter);
+  border-radius: 16px;
+  padding: 1.25rem 0;
+  margin-bottom: 1.5rem;
+  min-height: 90px;
+}
+
+.stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stat-num {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--heading-color);
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+}
+
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--border-color);
+}
+
+/* ── Sección título ── */
+.section-title {
+  text-align: left;
+  color: var(--section-label-color);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin: 0 0 0.75rem;
+}
+
+/* ── Info ── */
+.info-section {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.info-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-lighter);
+  border-radius: 16px;
+  padding: 0.5rem 1rem;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color);
+  gap: 1rem;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.label {
+  color: var(--text-tertiary);
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.value {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  text-align: right;
+}
+
+.value.blood {
+  color: var(--primary-blue);
+  font-weight: 700;
+}
+
+.value.allergy {
+  color: var(--error-text);
+}
+
+/* ── Perfiles familia ── */
+.profiles-section {
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.profiles-list {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.profiles-list::-webkit-scrollbar {
+  display: none;
+}
+
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.profile-card p {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.profile-card small {
+  color: var(--text-tertiary);
+  font-size: 0.78rem;
+}
+
+.add-btn {
+  background: var(--primary-blue);
+  color: white;
+  font-size: 1.75rem;
+  font-weight: 300;
+  text-decoration: none;
+}
+
+.add-btn a {
+  color: white;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-btn a:active,
+.add-btn a:visited {
+  color: white;
+}
+
+.add-icon {
+  color: white !important;
+}
+
+/* ── Botón editar ── */
+.profile-container button {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  transition: background 0.15s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  min-height: 48px;
+}
+
+.btn-edit {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--primary-blue);
+}
+
+.btn-theme {
+  background: var(--primary-contrast);
+  color: var(--secondary-contrast);
+  border: none;
+}
+
+.profile-container button:active {
+  background: var(--bg-primary);
+}
+
+/* Botón de cierre de sesión */
+.btn-logout {
+  border: none;
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+/* ── Skeleton Loading ── */
+@keyframes skeleton-loading {
+  0% {
+    background-color: var(--skeleton-base);
+  }
+  50% {
+    background-color: var(--skeleton-shimmer);
+  }
+  100% {
+    background-color: var(--skeleton-base);
+  }
+}
+
+.skeleton-loading {
+  --skeleton-base: rgba(200, 200, 200, 0.1);
+  --skeleton-shimmer: rgba(200, 200, 200, 0.2);
+}
+
+.skeleton {
+  background-color: var(--skeleton-base);
+  border-radius: 50%;
+  animation: skeleton-loading 1.5s infinite ease-in-out;
+}
+
+.skeleton-line {
+  height: 1rem;
+  background-color: var(--skeleton-base);
+  border-radius: 6px;
+  margin: 0.5rem 0;
+  animation: skeleton-loading 1.5s infinite ease-in-out;
+}
+
+.skeleton-title {
+  height: 1.75rem;
+  width: 80%;
+  margin: 1rem auto 0.5rem;
+}
+
+.skeleton-subtitle {
+  height: 1rem;
+  width: 60%;
+  margin: 0.5rem auto 1rem;
+}
+
+.skeleton-badge {
+  display: inline-block;
+  height: 2rem;
+  width: 6rem;
+  margin: 0.25rem;
+  border-radius: 20px;
+  background-color: var(--skeleton-base);
+  animation: skeleton-loading 1.5s infinite ease-in-out;
+}
+
+.skeleton-stat {
+  height: 1.5rem;
+  width: 60%;
+  margin: 0.5rem auto;
+}
+
+.skeleton-info-label {
+  height: 0.75rem;
+  width: 40%;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.skeleton-info-value {
+  height: 1rem;
+  width: 70%;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.skeleton-card {
+  opacity: 0.7;
+}
+
+.skeleton-card .avatar {
+  margin: 0 auto 0.5rem;
+}
+
+.skeleton-profile-name {
+  height: 1rem;
+  width: 80%;
+  margin: 0.5rem auto 0.25rem;
+}
+
+.skeleton-profile-relation {
+  height: 0.75rem;
+  width: 60%;
+  margin: 0.25rem auto 0.5rem;
+}
+
+.skeleton-button {
+  height: 3rem;
+  width: 100%;
+  margin-top: 1rem;
+}

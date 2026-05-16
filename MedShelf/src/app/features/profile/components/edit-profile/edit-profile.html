@@ -1,0 +1,124 @@
+<div class="edit-profile-container">
+  <!-- Botón retorno -->
+  <div class="header-actions">
+    <a routerLink="/profile" class="btn-back">
+      <lucide-angular [img]="icons.arrowLeft" size="24"></lucide-angular>
+    </a>
+    <h2>Editar Perfil</h2>
+    <div style="width: 48px;"></div>
+  </div>
+
+  <form class="edit-form" (ngSubmit)="saveProfile()">
+    <!-- Nombre -->
+    <div class="form-group">
+      <label for="name">Nombre completo</label>
+      <input 
+        type="text" 
+        id="name" 
+        [(ngModel)]="profileData.name" 
+        name="name"
+        placeholder="Ej. John Doe" 
+        required />
+    </div>
+
+    <!-- Edad -->
+    <div class="form-group">
+      <label for="age">Edad</label>
+      <input 
+        type="number" 
+        id="age" 
+        [(ngModel)]="profileData.age" 
+        name="age"
+        min="1" 
+        max="120"
+        placeholder="Ej. 30" 
+        required />
+    </div>
+
+    <!-- Tipo de sangre -->
+    <div class="form-group">
+      <label for="bloodtype">Tipo de sangre</label>
+      <select 
+        id="bloodtype" 
+        [(ngModel)]="profileData.bloodtype" 
+        name="bloodtype"
+        class="select-input"
+        required>
+        <option value="">Selecciona un tipo</option>
+        @for (type of bloodTypes; track type) {
+          <option [value]="type">{{ type }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Alergias -->
+    <div class="form-group">
+      <label for="allergyInput">Alergias</label>
+      <div class="allergy-input-wrapper">
+        <input 
+          type="text" 
+          id="allergyInput" 
+          [(ngModel)]="allergyInput" 
+          name="allergyInput"
+          placeholder="Ej. Penicilina" />
+        <button type="button" class="btn-add-allergy" (click)="addAllergy()">+</button>
+      </div>
+      @if (profileData.alergies.length > 0) {
+        <div class="allergies-list">
+          @for (allerge of profileData.alergies; let i = $index; track i) {
+            <span class="allergy-badge">
+              {{ allerge }}
+              <button type="button" class="btn-remove" (click)="removeAllergy(i)">✕</button>
+            </span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Email -->
+    <div class="form-group">
+      <label for="email">Correo electrónico</label>
+      <input 
+        type="email" 
+        id="email" 
+        [(ngModel)]="profileData.email" 
+        name="email"
+        placeholder="Ej. john@example.com" 
+        required />
+    </div>
+
+    <!-- Teléfono -->
+    <div class="form-group">
+      <label for="phone">Teléfono</label>
+      <input 
+        type="tel" 
+        id="phone" 
+        [(ngModel)]="profileData.phone" 
+        name="phone"
+        placeholder="Ej. 123-456-7890" 
+        required />
+    </div>
+
+    <!-- Dirección -->
+    <div class="form-group">
+      <label for="address">Dirección</label>
+      <textarea 
+        id="address" 
+        [(ngModel)]="profileData.address" 
+        name="address"
+        placeholder="Ej. 123 Main St, Anytown, USA"
+        rows="3"></textarea>
+    </div>
+
+    <!-- Botones -->
+    <div class="form-actions">
+      <button type="submit" class="btn-save">
+        <lucide-angular [img]="icons.save" size="20"></lucide-angular>
+        Guardar cambios
+      </button>
+      <button type="button" class="btn-cancel" (click)="cancel()">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,100 @@
+<div class="add-family-container">
+  <!-- Botón retorno -->
+  <div class="header-actions">
+    <a routerLink="/profile" class="btn-back">
+      <lucide-angular [img]="icons.arrowLeft" size="24"></lucide-angular>
+    </a>
+    <h2>Agregar Familia</h2>
+    <div style="width: 48px;"></div>
+  </div>
+
+  <form class="add-family-form" (ngSubmit)="addFamilyMember()">
+    <!-- Nombre -->
+    <div class="form-group">
+      <label for="name">Nombre completo</label>
+      <input 
+        type="text" 
+        id="name" 
+        [(ngModel)]="familyData.name" 
+        name="name"
+        placeholder="Ej. María García" 
+        required />
+    </div>
+
+    <!-- Relación -->
+    <div class="form-group">
+      <label for="relation">Relación</label>
+      <select 
+        id="relation" 
+        [(ngModel)]="familyData.relation" 
+        name="relation"
+        class="select-input"
+        required>
+        <option value="">Selecciona una relación</option>
+        @for (rel of relations; track rel) {
+          <option [value]="rel">{{ rel }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Edad -->
+    <div class="form-group">
+      <label for="age">Edad</label>
+      <input 
+        type="number" 
+        id="age" 
+        [(ngModel)]="familyData.age" 
+        name="age"
+        min="0" 
+        max="120"
+        placeholder="Ej. 45" />
+    </div>
+
+    <!-- Tipo de sangre -->
+    <div class="form-group">
+      <label for="bloodtype">Tipo de sangre</label>
+      <select 
+        id="bloodtype" 
+        [(ngModel)]="familyData.bloodtype" 
+        name="bloodtype"
+        class="select-input">
+        <option value="">Selecciona un tipo</option>
+        @for (type of bloodTypes; track type) {
+          <option [value]="type">{{ type }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Alergias -->
+    <div class="form-group">
+      <label for="allergyInput">Alergias</label>
+      <div class="allergy-input-wrapper">
+        <input 
+          type="text" 
+          id="allergyInput" 
+          [(ngModel)]="allergyInput" 
+          name="allergyInput"
+          placeholder="Ej. Penicilina" />
+        <button type="button" class="btn-add-allergy" (click)="addAllergy()">+</button>
+      </div>
+      @if (familyData.alergies.length > 0) {
+        <div class="allergies-list">
+          @for (allerge of familyData.alergies; let i = $index; track i) {
+            <span class="allergy-badge">
+              {{ allerge }}
+              <button type="button" class="btn-remove" (click)="removeAllergy(i)">✕</button>
+            </span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Botones -->
+    <div class="form-actions">
+      <button type="submit" class="btn-save">
+        <lucide-angular [img]="icons.save" size="20"></lucide-angular>
+        Agregar miembro
+      </button>
+    </div>
+  </form>
+</div>
