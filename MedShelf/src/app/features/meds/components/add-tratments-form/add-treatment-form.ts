@@ -1,12 +1,11 @@
-import { Component, OnInit, OnDestroy, inject, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, HostListener, signal } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Check, ChevronDown, X } from 'lucide-angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { TreatmentsService } from '../../../../core/services/treatments.service';
-import { ItemsService } from '../../../../core/services/items.service'; // ajusta si ItemResponse no es exportado
-import { HousesService } from '../../../../core/services/houses.service';
+import { ItemsService } from '../../../../core/services/items.service';
 import { ProfilesService, Profile } from '../../../../core/services/profiles.service';
 
 interface ItemOption {
@@ -25,14 +24,13 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
   private readonly treatmentsService = inject(TreatmentsService);
   private readonly profilesService = inject(ProfilesService);
   private readonly itemsService = inject(ItemsService);
-  private readonly housesService = inject(HousesService);
 
   private readonly destroy$ = new Subject<void>();
   private readonly searchInput$ = new Subject<string>();
 
   icons = { arrowLeft: ArrowLeft, check: Check, chevronDown: ChevronDown, x: X };
 
-  // Combobox items
+  // Combobox
   items: ItemOption[] = [];
   itemSearchText = '';
   selectedItemName = '';
@@ -44,44 +42,39 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
   formData = {
     profileId: '',
     itemId: '',
-    frequencyValue: 8,
-    startTime: '08:00',
+    dose: '',
+    frequency: 8,
+    startDate: new Date().toISOString().slice(0, 10),
     duration: 7,
-    durationUnit: 'days' as 'days' | 'weeks' | 'months',
-
-    doseQuantity: '',
   };
 
   profiles: Profile[] = [];
   isLoadingProfiles = false;
-
   isLoading = false;
   errorMessage = '';
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadInitialItems();
     this.setupSearch();
     this.loadProfiles();
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  private setupSearch() {
+  private setupSearch(): void {
     this.searchInput$
       .pipe(debounceTime(350), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((term) => {
         this.isLoadingItems = true;
         this.itemsService.getItemsByHouse(term ? { 'filter[name]': term } : undefined).subscribe({
-          next: () => {
-            this.mapItems();
+          next: (response: any) => {
+            this.updateItemsFromResponse(response);
             this.isLoadingItems = false;
           },
-          error: () => {
-            this.isLoadingItems = false;
-          },
+          error: () => (this.isLoadingItems = false),
         });
       });
   }
@@ -92,7 +85,6 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
       next: () => {
         this.profiles = this.profilesService.profiles();
         this.isLoadingProfiles = false;
-        console.log(this.profiles);
       },
       error: () => {
         this.isLoadingProfiles = false;
@@ -104,27 +96,30 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
   loadInitialItems() {
     this.isLoadingItems = true;
     this.itemsService.getItemsByHouse().subscribe({
-      next: () => {
-        this.mapItems();
+      next: (response: any) => {
+        this.updateItemsFromResponse(response);
         this.isLoadingItems = false;
       },
       error: () => {
+        this.items = [];
         this.isLoadingItems = false;
-        this.errorMessage = 'No se pudieron cargar los medicamentos.';
+        this.hasMoreItems = false;
       },
     });
   }
 
-  private mapItems() {
-    const response = this.itemsService.items();
-    this.hasMoreItems = !!response.nextCursor;
-    this.items = response.items.map((item) => ({
-      id: item.id,
-      label: `Item ${item.id.slice(0, 8)}... — ${item.totalContent} unidades`,
+  private updateItemsFromResponse(response: any): void {
+    const rawItems: any[] = response?.items ?? [];
+    this.hasMoreItems = !!response?.nextCursor;
+    this.items = rawItems.map((item) => ({
+      id: String(item.id),
+      label: `${item.product?.name ?? item.id} — ${item.totalContent ?? 0} ${item.unit ?? 'u.'}`,
     }));
   }
 
-  onSearchChange(term: string) {
+  // --- Combobox handlers ---
+
+  onSearchChange(term: string): void {
     this.itemSearchText = term;
     if (this.formData.itemId) {
       this.formData.itemId = '';
@@ -133,18 +128,18 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
     this.searchInput$.next(term);
   }
 
-  openDropdown() {
+  openDropdown(): void {
     this.isDropdownOpen = true;
   }
 
-  selectItem(item: ItemOption) {
+  selectItem(item: ItemOption): void {
     this.formData.itemId = item.id;
     this.selectedItemName = item.label;
     this.itemSearchText = item.label;
     this.isDropdownOpen = false;
   }
 
-  clearItem(event: Event) {
+  clearItem(event: Event): void {
     event.stopPropagation();
     this.formData.itemId = '';
     this.selectedItemName = '';
@@ -153,10 +148,9 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
   }
 
   @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
-    const target = event.target as HTMLElement;
+  onDocumentClick(event: MouseEvent): void {
     const combobox = document.getElementById('item-combobox');
-    if (combobox && !combobox.contains(target)) {
+    if (combobox && !combobox.contains(event.target as HTMLElement)) {
       this.isDropdownOpen = false;
       if (this.selectedItemName) {
         this.itemSearchText = this.selectedItemName;
@@ -164,60 +158,48 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
     }
   }
 
+  // --- Dates & duration ---
+
+  private computeDays(): number {
+    const { duration } = this.formData;
+    return duration;
+  }
+
   getNextScheduledTimes(): string[] {
-    if (!this.formData.startTime || !this.formData.frequencyValue) return [];
+    if (!this.formData.startDate || !this.formData.frequency) return [];
     const times: string[] = [];
-    const [h, m] = this.formData.startTime.split(':').map(Number);
-    let current = h;
+    const base = new Date(`${this.formData.startDate}T08:00:00`);
     for (let i = 0; i < 3; i++) {
-      times.push(`${String(current % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-      current += this.formData.frequencyValue;
+      const t = new Date(base.getTime() + i * this.formData.frequency * 3_600_000);
+      times.push(t.toISOString().slice(11, 16));
     }
     return times;
   }
 
-  private computeDates(): { startDate: string; endDate: string } {
-    const now = new Date();
-    const [h, m] = this.formData.startTime.split(':').map(Number);
-    now.setHours(h, m, 0, 0);
-    const startDate = now.toISOString();
+  // --- Submit ---
 
-    const end = new Date(now);
-    if (this.formData.durationUnit === 'days') end.setDate(end.getDate() + this.formData.duration);
-    if (this.formData.durationUnit === 'weeks')
-      end.setDate(end.getDate() + this.formData.duration * 7);
-    if (this.formData.durationUnit === 'months')
-      end.setMonth(end.getMonth() + this.formData.duration);
-    const endDate = end.toISOString();
+  saveTreatment(): void {
+    this.errorMessage = '';
 
-    return { startDate, endDate };
-  }
-
-  saveTreatment() {
-    const profileId = this.formData.profileId;
-    if (!profileId) {
+    if (!this.formData.profileId) {
       this.errorMessage = 'Selecciona un perfil.';
       return;
     }
-    if (!this.formData.itemId || !this.formData.doseQuantity) {
+    if (!this.formData.itemId || !this.formData.dose) {
       this.errorMessage = 'Completa todos los campos requeridos.';
       return;
     }
+    console.log('Guardando tratamiento con datos:', this.formData);
 
     this.isLoading = true;
-    this.errorMessage = '';
-
-    const { startDate, endDate } = this.computeDates();
 
     this.treatmentsService
-      .createTreatment({
-        profileId,
+      .createTreatment(this.formData.profileId, {
         itemId: this.formData.itemId,
-        frequencyValue: this.formData.frequencyValue,
-        frequencyUnit: 'hours',
-        doseQuantity: Number(this.formData.doseQuantity),
-        startDate,
-        endDate,
+        dose: Number(this.formData.dose),
+        frequencyHours: this.formData.frequency,
+        startDate: this.formData.startDate,
+        days: this.computeDays(),
       })
       .subscribe({
         next: () => {

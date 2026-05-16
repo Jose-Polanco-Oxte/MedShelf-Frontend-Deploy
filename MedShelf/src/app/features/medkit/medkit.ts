@@ -84,6 +84,7 @@ export class Medkit implements OnInit {
         const mapped = items.map((item: any) => this.mapItemToMedicine(item));
         this.medicines.set(mapped);
         this.filteredMedicines.set(mapped);
+        console.log('Medicamentos cargados:', mapped);
         this.calculateStatistics();
       },
       error: () => {
