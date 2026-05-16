@@ -25,6 +25,7 @@ export class Register {
 
   fullname = signal('');
   email = signal('');
+  birthDate = signal('');
   password = signal('');
   confirmPassword = signal('');
   isLoading = signal(false);
@@ -84,6 +85,31 @@ export class Register {
     return '';
   }
 
+  // Validar fecha de nacimiento
+  validateBirthDate(): string {
+    if (!this.birthDate()) {
+      return 'La fecha de nacimiento es requerida.';
+    }
+    
+    const birth = new Date(this.birthDate());
+    const today = new Date();
+    const age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      const actualAge = age - 1;
+      if (actualAge < 18) {
+        return 'Debes ser mayor de 18 años para registrarte.';
+      }
+    } else {
+      if (age < 18) {
+        return 'Debes ser mayor de 18 años para registrarte.';
+      }
+    }
+    
+    return '';
+  }
+
   // Validar contraseña según los requisitos del frontend
   validatePassword(): string {
     if (this.password().length < 5) {
@@ -109,7 +135,7 @@ export class Register {
 
   onSubmit() {
     // Validar campos vacíos
-    if (!this.fullname() || !this.email() || !this.password() || !this.confirmPassword()) {
+    if (!this.fullname() || !this.email() || !this.birthDate() || !this.password() || !this.confirmPassword()) {
       this.errorMessage.set('Completa todos los campos.');
       return;
     }
@@ -125,6 +151,13 @@ export class Register {
     const emailError = this.validateEmail();
     if (emailError) {
       this.errorMessage.set(emailError);
+      return;
+    }
+
+    // Validar fecha de nacimiento
+    const birthDateError = this.validateBirthDate();
+    if (birthDateError) {
+      this.errorMessage.set(birthDateError);
       return;
     }
 
@@ -149,11 +182,10 @@ export class Register {
       next: (response) => {
         console.log('Registro exitoso:', response);
         
-        // Crear perfil automáticamente con el nombre del usuario registrado
+        // Crear perfil automáticamente con el nombre y fecha de nacimiento del usuario registrado
         const profileData = {
           name: this.fullname().trim(),
-          birthDate: null,
-          allergies: []
+          birthDate: this.birthDate()
         };
         
         this.apiService.post('/profiles', profileData).subscribe({
@@ -164,13 +196,10 @@ export class Register {
             this.router.navigate(['/successful-registration']);
           },
           error: (profileError) => {
-            console.error('Error al crear perfil automático:', profileError);
-            console.error('Detalles del error completos:', {
-              status: profileError?.status,
-              statusText: profileError?.statusText,
-              errorBody: profileError?.error,
-              message: profileError?.message,
-            });
+            console.error('Error al crear perfil automático:');
+            console.error('Status:', profileError?.status);
+            console.error('Body:', JSON.stringify(profileError?.error, null, 2));
+            console.error('Message:', profileError?.statusText);
             this.isLoading.set(false);
             // Navegar igual aunque falle la creación del perfil
             this.router.navigate(['/successful-registration']);

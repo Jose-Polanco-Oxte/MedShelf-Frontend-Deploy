@@ -10,8 +10,8 @@ import { Subject } from 'rxjs';
 import { takeUntil, switchMap } from 'rxjs/operators';
 
 interface AccountInfo {
-  name: string;
-  email: string;
+  name?: string;
+  email?: string;
   birthDate?: string;
   age?: number;
   allergies?: string[];
@@ -51,21 +51,13 @@ export class Account implements OnInit, OnDestroy {
     this.isLoading.set(true);
     
     // Obtener información del usuario y sus perfiles de manera secuencial
-    this.apiService.get<any>('/auth/me')
+    this.apiService.get<any>('/auth/account')
       .pipe(
         switchMap((currentUser) => {
           console.log('Usuario obtenido:', currentUser);
           
-          // Guardar info del usuario
-          const accountData: AccountInfo = {
-            name: currentUser.name,
-            email: currentUser.email,
-            birthDate: undefined,
-            age: undefined,
-            allergies: [],
-          };
-          
-          this.accountInfo.set(accountData);
+          // Guardar el usuario en un lugar temporal para usarlo después
+          (this as any)._currentUser = currentUser;
           
           // Obtener perfiles del usuario
           return this.profilesService.getProfiles();
@@ -76,20 +68,30 @@ export class Account implements OnInit, OnDestroy {
         next: (response: any) => {
           console.log('Respuesta de perfiles:', response);
           
+          const currentUser = (this as any)._currentUser;
           const profiles = response.items ?? response ?? [];
           console.log('Perfiles procesados:', profiles);
+          
+          // Construir la información de la cuenta combinando datos de /auth/account y /profiles
+          const accountData: AccountInfo = {
+            name: currentUser.name,
+            email: currentUser.email,
+            birthDate: undefined,
+            age: undefined,
+            allergies: [],
+          };
           
           if (profiles && profiles.length > 0) {
             const userProfile = profiles[0]; // El primer perfil es del usuario registrado
             console.log('Perfil del usuario:', userProfile);
+            console.log('Alergias en el perfil:', userProfile.allergies);
+            console.log('Tipo de alergias:', typeof userProfile.allergies);
             
-            // Actualizar info del usuario con datos del perfil
-            this.accountInfo.update((prev) => ({
-              ...prev!,
-              birthDate: userProfile.birthDate,
-              age: userProfile.birthDate ? this.calculateAge(userProfile.birthDate) : undefined,
-              allergies: userProfile.allergies || [],
-            }));
+            // Actualizar con datos del perfil
+            accountData.name = userProfile.name || currentUser.name;
+            accountData.birthDate = userProfile.birthDate;
+            accountData.age = userProfile.birthDate ? this.calculateAge(userProfile.birthDate) : undefined;
+            accountData.allergies = userProfile.allergies || [];
 
             // Los perfiles restantes son familiares
             if (profiles.length > 1) {
@@ -106,6 +108,10 @@ export class Account implements OnInit, OnDestroy {
             console.warn('No se encontraron perfiles');
             this.familyProfiles.set([]);
           }
+          
+          // Establecer toda la información de una vez
+          this.accountInfo.set(accountData);
+          console.log('Información de cuenta establecida:', accountData);
           
           this.isLoading.set(false);
         },
