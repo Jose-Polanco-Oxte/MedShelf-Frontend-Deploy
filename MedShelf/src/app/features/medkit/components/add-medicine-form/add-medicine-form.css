@@ -138,7 +138,7 @@ textarea {
   left: 0;
   right: 0;
   z-index: 100;
-  background: var(--color-surface, #1e1e2e);
+  background-color: var(--bg-secondary);
   border: 1px solid var(--color-border, #333);
   border-radius: 8px;
   overflow: hidden;
