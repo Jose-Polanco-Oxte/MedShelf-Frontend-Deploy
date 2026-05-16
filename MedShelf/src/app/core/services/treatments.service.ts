@@ -106,23 +106,24 @@ export class TreatmentsService {
   }
 
   getTreatmentDetails(treatmentId: string) {
-    return this.api.get<TreatmentResponse>(`/treatments/${treatmentId}`).pipe(
-      tap((treatment) => this._selectedTreatment.set(treatment)),
-    );
+    return this.api
+      .get<TreatmentResponse>(`/treatments/${treatmentId}`)
+      .pipe(tap((treatment) => this._selectedTreatment.set(treatment)));
   }
 
   createTreatment(data: CreateTreatmentRequest) {
-    return this.api.post<TreatmentResponse>('/treatments', data).pipe(
-      tap((treatment) => this._treatments.update((prev) => [treatment, ...prev])),
-    );
+    return this.api
+      .post<TreatmentResponse>('/treatments', data)
+      .pipe(tap((treatment) => this._treatments.update((prev) => [treatment, ...prev])));
   }
 
   updateTreatment(treatmentId: string, data: UpdateTreatmentRequest) {
     return this.api.put<TreatmentResponse>(`/treatments/${treatmentId}`, data).pipe(
       tap((updatedTreatment: TreatmentResponse) => {
         this._treatments.update((prev: TreatmentResponse[]) =>
-          prev.map((treatment: TreatmentResponse): TreatmentResponse =>
-            treatment.id === treatmentId ? updatedTreatment : treatment,
+          prev.map(
+            (treatment: TreatmentResponse): TreatmentResponse =>
+              treatment.id === treatmentId ? updatedTreatment : treatment,
           ),
         );
         if (this._selectedTreatment()?.id === treatmentId) {
@@ -133,25 +134,27 @@ export class TreatmentsService {
   }
 
   updateTreatmentStatus(treatmentId: string, status: string) {
-    return this.api
-      .patch<TreatmentResponse>(`/treatments/${treatmentId}`, { status })
-      .pipe(
-        tap((updatedTreatment: TreatmentResponse) => {
-          this._treatments.update((prev: TreatmentResponse[]) =>
-            prev.map((treatment: TreatmentResponse): TreatmentResponse =>
+    return this.api.patch<TreatmentResponse>(`/treatments/${treatmentId}`, { status }).pipe(
+      tap((updatedTreatment: TreatmentResponse) => {
+        this._treatments.update((prev: TreatmentResponse[]) =>
+          prev.map(
+            (treatment: TreatmentResponse): TreatmentResponse =>
               treatment.id === treatmentId ? updatedTreatment : treatment,
-            ),
-          );
-          if (this._selectedTreatment()?.id === treatmentId) {
-            this._selectedTreatment.set(updatedTreatment);
-          }
-        }),
-      );
+          ),
+        );
+        if (this._selectedTreatment()?.id === treatmentId) {
+          this._selectedTreatment.set(updatedTreatment);
+        }
+      }),
+    );
   }
 
   getTreatmentConsumptions(treatmentId: string, params?: Omit<ListTreatmentsParams, 'profile_id'>) {
     return this.api
-      .get<ConsumptionsListResponse>(`/treatments/${treatmentId}/consumptions`, params ? { params } : undefined)
+      .get<ConsumptionsListResponse>(
+        `/treatments/${treatmentId}/consumptions`,
+        params ? { params } : undefined,
+      )
       .pipe(
         tap(({ items, nextCursor }: ConsumptionsListResponse) => {
           this._consumptions.set(items);
@@ -160,7 +163,10 @@ export class TreatmentsService {
       );
   }
 
-  loadMoreConsumptions(treatmentId: string, params?: Omit<ListTreatmentsParams, 'profile_id' | 'cursor'>) {
+  loadMoreConsumptions(
+    treatmentId: string,
+    params?: Omit<ListTreatmentsParams, 'profile_id' | 'cursor'>,
+  ) {
     const cursor = this._nextConsumptionsCursor();
     if (!cursor) return null;
 
@@ -177,11 +183,13 @@ export class TreatmentsService {
   }
 
   registerConsumption(treatmentId: string, data: RegisterConsumptionRequest) {
-    return this.api.post<ConsumptionResponse>(`/treatments/${treatmentId}/consumptions`, data).pipe(
-      tap((consumption) =>
-        this._consumptions.update((prev: ConsumptionResponse[]) => [consumption, ...prev]),
-      ),
-    );
+    return this.api
+      .post<ConsumptionResponse>(`/treatments/${treatmentId}/consumptions`, data)
+      .pipe(
+        tap((consumption) =>
+          this._consumptions.update((prev: ConsumptionResponse[]) => [consumption, ...prev]),
+        ),
+      );
   }
 
   clearTreatments() {

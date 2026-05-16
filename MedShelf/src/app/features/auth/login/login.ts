@@ -43,6 +43,7 @@ export class Login {
           error?.error?.message ||
           error?.error?.detail ||
           'No se pudo iniciar sesión. Verifica tus credenciales.';
+        console.error('Error de inicio de sesión:', error);
       },
     });
   }
