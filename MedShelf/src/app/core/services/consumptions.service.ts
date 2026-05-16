@@ -36,7 +36,7 @@ export class ConsumptionsService {
     return this.api
       .get<
         CreateConsumptionResponse[]
-      >(`/profiles/${itemId}/consumptions`, params ? { params } : undefined)
+      >(`/items/${itemId}/consumptions`, params ? { params } : undefined)
       .pipe(
         tap((response) => {
           this._consumptions.set(response);
@@ -46,7 +46,7 @@ export class ConsumptionsService {
 
   addConsumption(itemId: string, amount: number) {
     return this.api
-      .post<CreateConsumptionResponse>(`/profiles/${itemId}/consumptions`, {
+      .post<CreateConsumptionResponse>(`/items/${itemId}/consumptions`, {
         itemId,
         amount,
       })
