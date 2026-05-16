@@ -1,13 +1,15 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectorRef, inject } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, ArrowLeft, Save } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Save, CheckCircle } from 'lucide-angular';
 import { ApiService } from '../../../../shared/services/api.service';
 
 interface ProfileData {
   id?: string;
+  profileId?: string;
   name: string;
+  email: string;
   birthDate: string;
   allergies: string[];
 }
@@ -19,41 +21,82 @@ interface ProfileData {
   styleUrl: './edit-info.css',
 })
 export class EditInfo implements OnInit {
-  icons = { arrowLeft: ArrowLeft, save: Save };
+  icons = { arrowLeft: ArrowLeft, save: Save, checkCircle: CheckCircle };
+  private router = inject(Router);
+  private apiService = inject(ApiService);
+  private cdr = inject(ChangeDetectorRef);
   
   profileData = signal<ProfileData>({
     name: '',
+    email: '',
     birthDate: '',
     allergies: [],
   });
 
   allergyInput = signal<string>('');
   isLoading = signal<boolean>(false);
-
-  constructor(private router: Router, private apiService: ApiService) {}
+  toastMessage = '';
+  isToastExiting = false;
+  private toastTimeoutId: any;
 
   ngOnInit() {
     this.loadProfile();
   }
 
   loadProfile() {
-    // Obtener datos del perfil del usuario desde el backend
-    this.apiService.get<any>('/profiles').subscribe({
-      next: (response) => {
-        const profiles = response.items ?? [];
-        if (profiles && profiles.length > 0) {
-          const userProfile = profiles[0]; // Asumir que el primer perfil es del usuario
-          this.profileData.set({
-            id: userProfile.id || '',
-            name: userProfile.name || '',
-            birthDate: userProfile.birthDate || '',
-            allergies: userProfile.allergies || [],
-          });
-          console.log('Perfil cargado:', this.profileData());
-        }
+    // Obtener datos de la cuenta (nombre y email) desde /auth/account
+    this.apiService.get<any>('/auth/account').subscribe({
+      next: (authData) => {
+        console.log('Datos de auth/account:', authData);
+        
+        // Obtener datos del perfil (alergias, fecha de nacimiento) desde /profiles
+        this.apiService.get<any>('/profiles').subscribe({
+          next: (response) => {
+            console.log('Respuesta completa de /profiles:', response);
+            const profiles = response.items ?? [];
+            console.log('Perfiles array:', profiles);
+            
+            if (profiles && profiles.length > 0) {
+              const userProfile = profiles[0]; // El primer perfil es del usuario
+              console.log('Primer perfil (usuario):', userProfile);
+              console.log('Alergias del perfil:', userProfile.allergies);
+              
+              this.profileData.set({
+                id: authData.id || '',
+                profileId: userProfile.id || '',
+                name: authData.name || '',
+                email: authData.email || '',
+                birthDate: userProfile.birthDate || '',
+                allergies: userProfile.allergies || [],
+              });
+              console.log('Perfil cargado en el componente:', this.profileData());
+            } else {
+              // Si no hay perfil, solo usar datos de auth/account
+              console.warn('No hay perfiles disponibles');
+              this.profileData.set({
+                id: authData.id || '',
+                name: authData.name || '',
+                email: authData.email || '',
+                birthDate: '',
+                allergies: [],
+              });
+            }
+          },
+          error: (error) => {
+            console.error('Error al cargar profiles:', error);
+            // Aunque falle profiles, mostrar al menos los datos de auth/account
+            this.profileData.set({
+              id: authData.id || '',
+              name: authData.name || '',
+              email: authData.email || '',
+              birthDate: '',
+              allergies: [],
+            });
+          },
+        });
       },
       error: (error) => {
-        console.error('Error al cargar perfil:', error);
+        console.error('Error al cargar auth/account:', error);
       },
     });
   }
@@ -61,6 +104,11 @@ export class EditInfo implements OnInit {
   updateName(value: string) {
     const current = this.profileData();
     this.profileData.set({ ...current, name: value });
+  }
+
+  updateEmail(value: string) {
+    const current = this.profileData();
+    this.profileData.set({ ...current, email: value });
   }
 
   updateBirthDate(value: string) {
@@ -91,10 +139,11 @@ export class EditInfo implements OnInit {
   saveProfile() {
     this.isLoading.set(true);
     const current = this.profileData();
+    console.log('Datos actuales del perfil a guardar:', current);
     
     // Validar que birthDate tenga el formato correcto YYYY-MM-DD
     if (!current.birthDate) {
-      alert('La fecha de nacimiento es requerida');
+      this.showError('La fecha de nacimiento es requerida');
       this.isLoading.set(false);
       return;
     }
@@ -106,41 +155,91 @@ export class EditInfo implements OnInit {
       formattedBirthDate = formattedBirthDate.split('T')[0];
     }
     
-    // Guardar todos los datos del perfil
-    const profileDataToSave = {
+    // 1. Actualizar nombre y email en /auth/account usando PATCH
+    const authDataToSave = {
       name: current.name.trim(),
-      birthDate: formattedBirthDate,
-      allergies: current.allergies && current.allergies.length > 0 ? current.allergies : [],
+      email: current.email.trim(),
     };
     
-    console.log('Guardando perfil:', profileDataToSave);
-    console.log('ID del perfil:', current.id);
+    console.log('Guardando datos de cuenta:', authDataToSave);
     
-    // Usar PUT si existe ID (actualizar perfil existente), POST si es nuevo
-    const request$ = current.id && current.id.trim()
-      ? this.apiService.put(`/profiles/${current.id}`, profileDataToSave)
-      : this.apiService.post('/profiles', profileDataToSave);
-    
-    const action = current.id && current.id.trim() ? 'actualizar' : 'crear';
-    
-    request$.subscribe({
-      next: (response: any) => {
-        this.isLoading.set(false);
-        console.log(`Perfil ${action}izado:`, response);
-        alert(`✓ Perfil ${action}izado`);
-        this.router.navigate(['/account']);
+    this.apiService.patch('/auth/account', authDataToSave).subscribe({
+      next: (authResponse: any) => {
+        console.log('Datos de cuenta actualizados:', authResponse);
+        
+        // 2. Después de actualizar /auth/account, actualizar /profiles
+        const profileDataToSave = {
+          name: current.name.trim(),
+          birthDate: formattedBirthDate,
+          allergies: current.allergies && current.allergies.length > 0 ? current.allergies : [],
+        };
+        
+        // console.log('Guardando datos de perfil:', profileDataToSave);
+        // console.log('Array de alergias:', current.allergies);
+        // console.log('Cantidad de alergias:', current.allergies?.length);
+        // console.log('ID del perfil:', current.profileId);
+        
+        // Usar PATCH si existe profileId (actualizar perfil existente), POST si es nuevo
+        const profileRequest$ = current.profileId && current.profileId.trim()
+          ? this.apiService.patch(`/profiles/${current.profileId}`, profileDataToSave)
+          : this.apiService.post('/profiles', profileDataToSave);
+        
+        const profileAction = current.profileId && current.profileId.trim() ? 'actualizar' : 'crear';
+        
+        profileRequest$.subscribe({
+          next: (profileResponse: any) => {
+            this.isLoading.set(false);
+            console.log(`Perfil ${profileAction}izado:`, profileResponse);
+            this.showSuccess('Información actualizada correctamente');
+            setTimeout(() => this.router.navigate(['/account']), 1500);
+          },
+          error: (error) => {
+            this.isLoading.set(false);
+            console.error(`Error al ${profileAction} perfil:`, error);
+            const errorMsg = error.error?.message || error.message || 'Error desconocido';
+            console.error('Detalle del error:', error.error);
+            this.showError(`Error al ${profileAction} el perfil: ${errorMsg}`);
+          },
+        });
       },
       error: (error) => {
         this.isLoading.set(false);
-        console.error(`Error al ${action} perfil:`, error);
+        console.error('Error al actualizar datos de cuenta:', error);
         const errorMsg = error.error?.message || error.message || 'Error desconocido';
         console.error('Detalle del error:', error.error);
-        alert(`Error al ${action} el perfil: ${errorMsg}`);
+        this.showError(`Error al actualizar datos de cuenta: ${errorMsg}`);
       },
     });
   }
 
   cancel() {
     this.router.navigate(['/account']);
+  }
+
+  private showSuccess(message: string) {
+    if (this.toastTimeoutId) clearTimeout(this.toastTimeoutId);
+    this.toastMessage = message;
+    this.isToastExiting = false;
+    this.cdr.detectChanges();
+    this.toastTimeoutId = setTimeout(() => this.closeToast(), 4000);
+  }
+
+  private showError(message: string) {
+    if (this.toastTimeoutId) clearTimeout(this.toastTimeoutId);
+    this.toastMessage = message;
+    this.isToastExiting = false;
+    this.cdr.detectChanges();
+    this.toastTimeoutId = setTimeout(() => this.closeToast(), 4000);
+  }
+
+  closeToast() {
+    if (this.toastTimeoutId) clearTimeout(this.toastTimeoutId);
+    this.isToastExiting = true;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.toastMessage = '';
+      this.isToastExiting = false;
+      this.cdr.detectChanges();
+    }, 300);
   }
 }

@@ -1,4 +1,23 @@
 <div class="edit-profile-container">
+  <!-- Toast Notification -->
+  @if (toastMessage) {
+    <div
+      [ngClass]="{
+        'toast-notification': true,
+        'toast-success': true,
+        'toast-exit': isToastExiting
+      }"
+    >
+      <div class="toast-content">
+        <lucide-angular [img]="icons.checkCircle" size="20" class="toast-icon"></lucide-angular>
+        <div class="toast-message">
+          <p>{{ toastMessage }}</p>
+        </div>
+        <button class="toast-close" (click)="closeToast()" type="button">✕</button>
+      </div>
+    </div>
+  }
+
   <!-- Botón retorno -->
   <div class="header-actions">
     <a routerLink="/account" class="btn-back">
@@ -18,6 +37,18 @@
         [ngModel]="profileData().name"
         (ngModelChange)="updateName($event)"
         name="name"
+        required />
+    </div>
+
+    <!-- Email del usuario -->
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input 
+        type="email" 
+        id="email" 
+        [ngModel]="profileData().email"
+        (ngModelChange)="updateEmail($event)"
+        name="email"
         required />
     </div>
 

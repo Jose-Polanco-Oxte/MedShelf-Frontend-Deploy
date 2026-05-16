@@ -51,7 +51,7 @@ export class Account implements OnInit, OnDestroy {
     this.isLoading.set(true);
     
     // Obtener información del usuario y sus perfiles de manera secuencial
-    this.apiService.get<any>('/auth/me')
+    this.apiService.get<any>('/auth/account')
       .pipe(
         switchMap((currentUser) => {
           console.log('Usuario obtenido:', currentUser);
@@ -72,10 +72,10 @@ export class Account implements OnInit, OnDestroy {
           const profiles = response.items ?? response ?? [];
           console.log('Perfiles procesados:', profiles);
           
-          // Construir la información de la cuenta combinando datos de /auth/me y /profiles
+          // Construir la información de la cuenta combinando datos de /auth/account y /profiles
           const accountData: AccountInfo = {
-            name: undefined,
-            email: currentUser.user?.email,
+            name: currentUser.name,
+            email: currentUser.email,
             birthDate: undefined,
             age: undefined,
             allergies: [],
@@ -84,9 +84,11 @@ export class Account implements OnInit, OnDestroy {
           if (profiles && profiles.length > 0) {
             const userProfile = profiles[0]; // El primer perfil es del usuario registrado
             console.log('Perfil del usuario:', userProfile);
+            console.log('Alergias en el perfil:', userProfile.allergies);
+            console.log('Tipo de alergias:', typeof userProfile.allergies);
             
             // Actualizar con datos del perfil
-            accountData.name = userProfile.name;
+            accountData.name = userProfile.name || currentUser.name;
             accountData.birthDate = userProfile.birthDate;
             accountData.age = userProfile.birthDate ? this.calculateAge(userProfile.birthDate) : undefined;
             accountData.allergies = userProfile.allergies || [];
