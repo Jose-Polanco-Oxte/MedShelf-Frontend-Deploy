@@ -10,37 +10,59 @@ main {
   align-items: center;
   height: 100%;
   width: 100%;
-  background-color: #eeeeee;
-  padding: 1rem;
+  background-color: var(--brand-color);
   box-sizing: border-box;
-  overflow-y: auto;
+}
+
+.loading-container {
+  width: 100%;
 }
 
 .register-container {
   width: 100%;
   max-width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.register-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+  padding: 3.5rem 0 2.5rem 0;
+}
+
+.register-hero h1 {
+  font-size: 3rem;
+}
+
+.register-hero p {
+  font-size: 1.25rem;
+  margin: 0;
 }
 
 .register-card {
+  flex: 1;
   background: white;
-  border-radius: 12px;
-  padding: 1.75rem 1.5rem;
+  border-radius: 50px 50px 0 0;
+  padding: 3.75rem 1.5rem 1rem 1.5rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .register-card h1 {
   text-align: center;
   color: #333;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 1.5rem 0;
   font-size: 1.75rem;
   font-weight: 700;
-}
-
-.subtitle {
-  text-align: center;
-  color: #666;
-  margin: 0 0 1.5rem 0;
-  font-size: 0.95rem;
 }
 
 .register-form {
@@ -63,6 +85,7 @@ main {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  position: relative;
 }
 
 .form-group label {
@@ -79,6 +102,7 @@ main {
   transition: border-color 0.3s ease;
   min-height: 48px;
   box-sizing: border-box;
+  padding-right: 45px;
 }
 
 .form-group input:focus {
@@ -106,6 +130,16 @@ main {
   box-sizing: border-box;
 }
 
+.btn-show-password {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  position: absolute;
+  right: 12px;
+  top: 40px;
+}
+
 .btn-register:active {
   transform: scale(0.98);
 }
@@ -127,4 +161,27 @@ main {
   text-decoration: none;
   font-weight: 600;
   transition: color 0.2s ease;
+}
+
+.password-error {
+  margin: 0;
+  border: 1px solid #f5c2c7;
+  border-radius: 8px;
+  padding: 0.75rem;
+  background-color: #f8d7da;
+  color: #842029;
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+}
+
+.btn-show-password:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.copyright {
+  text-align: center;
+  margin-top: 2rem;
+  color: #666;
+  font-size: 0.9rem;
 }

@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { tap, catchError, of } from 'rxjs';
+import { tap, catchError, of, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiService } from '../../shared/services/api.service';
 
@@ -17,6 +17,7 @@ export class AuthService {
   private apiUrl = environment.apiUrl;
 
   isAuthenticated = signal(false);
+  currentUser = signal<User | null>(null);
 
   constructor(
     private api: ApiService,
@@ -27,6 +28,10 @@ export class AuthService {
     return this.api.post(`/auth/login`, { email, password }).pipe(
       tap(() => {
         this.isAuthenticated.set(true);
+      }),
+      // Después de hacer login, obtener la información del usuario
+      switchMap(() => this.hydrate()),
+      tap(() => {
         this.router.navigate(['/']);
       }),
     );
@@ -36,6 +41,7 @@ export class AuthService {
     return this.api.post(`/auth/logout`, {}).pipe(
       tap(() => {
         this.isAuthenticated.set(false);
+        this.currentUser.set(null);
         this.router.navigate(['/login']);
       }),
     );
@@ -44,8 +50,13 @@ export class AuthService {
   register(name: string, email: string, password: string) {
     return this.api.post(`/auth/register`, { name, email, password }).pipe(
       tap(() => {
-        this.isAuthenticated.set(false);
-        this.router.navigate(['/login']);
+        this.isAuthenticated.set(true);
+      }),
+      // Después de registrarse, hacer hydrate para obtener el usuario y el token
+      switchMap(() => this.hydrate()),
+      catchError((error) => {
+        console.error('Error en registro:', error);
+        throw error;
       }),
     );
   }
@@ -56,11 +67,13 @@ export class AuthService {
     return this.api.get<User>(`/auth/me`).pipe(
       tap((user) => {
         this.isAuthenticated.set(true);
+        this.currentUser.set(user);
         console.log('Usuario autenticado:', user);
         return user;
       }),
       catchError(() => {
         this.isAuthenticated.set(false);
+        this.currentUser.set(null);
         return of(null);
       }),
     );

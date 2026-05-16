@@ -172,7 +172,6 @@ export class Home implements OnInit {
             .join('')
             .toUpperCase()
             .slice(0, 2),
-          email: profile.email,
           relationship: '',
         }));
         this.cdr.detectChanges();
