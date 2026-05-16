@@ -23,7 +23,7 @@ interface Place {
   id: string;
 }
 
-interface ItemResponse {
+export interface ItemResponse {
   id: string;
   product: Product;
   place: Place;

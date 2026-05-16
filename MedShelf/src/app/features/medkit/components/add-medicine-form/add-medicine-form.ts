@@ -1,13 +1,13 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { LucideAngularModule, ArrowLeft, Check } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Check, ChevronDown, X } from 'lucide-angular';
 import { ProductsService, type ProductResponse } from '../../../../core/services/products.service';
 import { PlacesService, type PlaceResponse } from '../../../../core/services/places.service';
-import { ItemsService } from '../../../../core/services/items.service';
-import { AddItemToPlaceRequest } from '../../../../core/services/items.service';
+import { ItemsService, AddItemToPlaceRequest } from '../../../../core/services/items.service';
 import { HousesService } from '../../../../core/services/houses.service';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 interface ProductOption {
   id: string;
@@ -25,17 +25,18 @@ interface PlaceOption {
   templateUrl: './add-medicine-form.html',
   styleUrl: './add-medicine-form.css',
 })
-export class AddMedicineForm implements OnInit {
+export class AddMedicineForm implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly housesService = inject(HousesService);
   private readonly productsService = inject(ProductsService);
   private readonly placesService = inject(PlacesService);
   private readonly itemsService = inject(ItemsService);
-  private cdr = inject(ChangeDetectorRef);
 
-  icons = { arrowLeft: ArrowLeft, check: Check };
+  private readonly destroy$ = new Subject<void>();
+  private readonly searchInput$ = new Subject<string>();
 
-  products: ProductOption[] = [];
+  icons = { arrowLeft: ArrowLeft, check: Check, chevronDown: ChevronDown, x: X };
+
   places: PlaceOption[] = [];
 
   formData = {
@@ -44,24 +45,62 @@ export class AddMedicineForm implements OnInit {
     expirationDate: '',
   };
 
+  // Combobox state
+  productSearchText = '';
+  selectedProductName = '';
+  isDropdownOpen = false;
+  isLoadingProducts = false;
+  isLoadingMore = false;
+
   isLoading = false;
   errorMessage = '';
 
-  ngOnInit() {
-    this.loadProducts();
-    this.loadPlaces();
+  get products() {
+    return this.productsService.products();
   }
 
-  loadProducts() {
+  get hasMore() {
+    return this.productsService.hasMore();
+  }
+
+  ngOnInit() {
+    this.loadInitialProducts();
+    this.loadPlaces();
+    this.setupSearch();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.productsService.clearProducts();
+  }
+
+  private setupSearch() {
+    this.searchInput$
+      .pipe(debounceTime(350), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((term) => {
+        this.productsService.clearProducts();
+        this.isLoadingProducts = true;
+        this.productsService.getProducts(term ? { 'filter[name]': term } : undefined).subscribe({
+          next: () => {
+            this.isLoadingProducts = false;
+          },
+          error: () => {
+            this.isLoadingProducts = false;
+            this.errorMessage = 'No se pudieron cargar los productos.';
+          },
+        });
+      });
+  }
+
+  private loadInitialProducts() {
+    this.isLoadingProducts = true;
     this.productsService.getProducts().subscribe({
       next: () => {
-        this.products = this.productsService.products().map((product: ProductResponse) => ({
-          id: product.id,
-          name: product.name,
-        }));
+        this.isLoadingProducts = false;
       },
-      error: (error) => {
-        console.error('Error cargando productos:', error);
+      error: () => {
+        this.isLoadingProducts = false;
         this.errorMessage = 'No se pudieron cargar los productos.';
       },
     });
@@ -73,7 +112,6 @@ export class AddMedicineForm implements OnInit {
       this.errorMessage = 'No se encontró una casa asociada.';
       return;
     }
-
     this.placesService.getPlaces(houseId).subscribe({
       next: () => {
         this.places = this.placesService.places().map((place: PlaceResponse) => ({
@@ -81,11 +119,69 @@ export class AddMedicineForm implements OnInit {
           name: place.name,
         }));
       },
-      error: (error) => {
-        console.error('Error cargando lugares:', error);
+      error: () => {
         this.errorMessage = 'No se pudieron cargar los lugares.';
       },
     });
+  }
+
+  onSearchChange(term: string) {
+    this.productSearchText = term;
+    // Clear selection if user edits the text
+    if (this.formData.productId) {
+      this.formData.productId = '';
+      this.selectedProductName = '';
+    }
+    this.searchInput$.next(term);
+  }
+
+  openDropdown() {
+    this.isDropdownOpen = true;
+  }
+
+  selectProduct(product: ProductOption) {
+    this.formData.productId = product.id;
+    this.selectedProductName = product.name;
+    this.productSearchText = product.name;
+    this.isDropdownOpen = false;
+  }
+
+  clearProduct(event: Event) {
+    event.stopPropagation();
+    this.formData.productId = '';
+    this.selectedProductName = '';
+    this.productSearchText = '';
+    this.productsService.clearProducts();
+    this.loadInitialProducts();
+  }
+
+  loadMore() {
+    if (this.isLoadingMore) return;
+    const obs = this.productsService.loadMore(
+      this.productSearchText ? { 'filter[name]': this.productSearchText } : undefined,
+    );
+    if (!obs) return;
+    this.isLoadingMore = true;
+    obs.subscribe({
+      next: () => {
+        this.isLoadingMore = false;
+      },
+      error: () => {
+        this.isLoadingMore = false;
+      },
+    });
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    const combobox = document.getElementById('product-combobox');
+    if (combobox && !combobox.contains(target)) {
+      this.isDropdownOpen = false;
+      if (this.selectedProductName) {
+        this.productSearchText = this.selectedProductName;
+      }
+    }
   }
 
   saveMedicine() {
@@ -97,11 +193,9 @@ export class AddMedicineForm implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    const expirationDate = new Date(this.formData.expirationDate).toISOString();
-
     const addItemToPlaceRequest: AddItemToPlaceRequest = {
       productId: this.formData.productId,
-      expirationDate,
+      expirationDate: new Date(this.formData.expirationDate).toISOString(),
     };
 
     this.itemsService.addItemToPlace(this.formData.placeId, addItemToPlaceRequest).subscribe({

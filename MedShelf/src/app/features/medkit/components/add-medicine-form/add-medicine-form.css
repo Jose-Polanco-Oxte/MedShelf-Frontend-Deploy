@@ -48,7 +48,7 @@ label {
 
 /* Inputs */
 input,
-textarea, 
+textarea,
 select {
   padding: 0.875rem;
   border-radius: 8px;
@@ -81,7 +81,7 @@ textarea {
   margin-bottom: 4rem;
   display: flex;
   justify-content: center;
-  gap: .5rem;
+  gap: 0.5rem;
   padding: 1rem;
   border: none;
   border-radius: 8px;
@@ -94,4 +94,110 @@ textarea {
   min-height: 56px;
   width: 100%;
   box-sizing: border-box;
+}
+
+/* Combobox */
+.combobox {
+  position: relative;
+}
+
+.combobox-input-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.combobox-input {
+  width: 100%;
+  padding-right: 2rem;
+  /* hereda los mismos estilos que tus <select> */
+}
+
+.combobox-arrow,
+.combobox-clear {
+  position: absolute;
+  right: 0.6rem;
+  color: var(--color-text-muted, #888);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.combobox-clear {
+  pointer-events: all;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--color-text-muted, #888);
+}
+
+.combobox-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--color-surface, #1e1e2e);
+  border: 1px solid var(--color-border, #333);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  max-height: 260px;
+  display: flex;
+  flex-direction: column;
+}
+
+.combobox-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.combobox-option {
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s;
+}
+
+.combobox-option:hover {
+  background: var(--color-hover, rgba(255, 255, 255, 0.06));
+}
+
+.combobox-option.selected {
+  background: var(--color-primary-muted, rgba(99, 102, 241, 0.2));
+  color: var(--color-primary, #818cf8);
+  font-weight: 500;
+}
+
+.combobox-state {
+  padding: 1rem;
+  text-align: center;
+  color: var(--color-text-muted, #888);
+  font-size: 0.85rem;
+}
+
+.combobox-load-more {
+  width: 100%;
+  padding: 0.55rem;
+  border: none;
+  border-top: 1px solid var(--color-border, #333);
+  background: transparent;
+  color: var(--color-primary, #818cf8);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.combobox-load-more:hover:not(:disabled) {
+  background: var(--color-hover, rgba(255, 255, 255, 0.06));
+}
+
+.combobox-load-more:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
