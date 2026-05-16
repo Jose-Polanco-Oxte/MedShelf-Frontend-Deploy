@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +6,7 @@ import { LucideAngularModule, ArrowLeft, Save } from 'lucide-angular';
 import { ApiService } from '../../../../shared/services/api.service';
 
 interface ProfileData {
+  id?: string;
   name: string;
   birthDate: string;
   allergies: string[];
@@ -20,14 +21,14 @@ interface ProfileData {
 export class EditInfo implements OnInit {
   icons = { arrowLeft: ArrowLeft, save: Save };
   
-  profileData: ProfileData = {
+  profileData = signal<ProfileData>({
     name: '',
     birthDate: '',
     allergies: [],
-  };
+  });
 
-  allergyInput: string = '';
-  isLoading: boolean = false;
+  allergyInput = signal<string>('');
+  isLoading = signal<boolean>(false);
 
   constructor(private router: Router, private apiService: ApiService) {}
 
@@ -42,11 +43,13 @@ export class EditInfo implements OnInit {
         const profiles = response.items ?? [];
         if (profiles && profiles.length > 0) {
           const userProfile = profiles[0]; // Asumir que el primer perfil es del usuario
-          this.profileData = {
+          this.profileData.set({
+            id: userProfile.id || '',
             name: userProfile.name || '',
             birthDate: userProfile.birthDate || '',
             allergies: userProfile.allergies || [],
-          };
+          });
+          console.log('Perfil cargado:', this.profileData());
         }
       },
       error: (error) => {
@@ -55,37 +58,84 @@ export class EditInfo implements OnInit {
     });
   }
 
+  updateName(value: string) {
+    const current = this.profileData();
+    this.profileData.set({ ...current, name: value });
+  }
+
+  updateBirthDate(value: string) {
+    const current = this.profileData();
+    this.profileData.set({ ...current, birthDate: value });
+  }
+
   addAllergy() {
-    if (this.allergyInput.trim() && !this.profileData.allergies.includes(this.allergyInput.trim())) {
-      this.profileData.allergies.push(this.allergyInput.trim());
-      this.allergyInput = '';
+    const trimmed = this.allergyInput().trim();
+    if (trimmed && !this.profileData().allergies.includes(trimmed)) {
+      const current = this.profileData();
+      this.profileData.set({
+        ...current,
+        allergies: [...current.allergies, trimmed],
+      });
+      this.allergyInput.set('');
     }
   }
 
   removeAllergy(index: number) {
-    this.profileData.allergies.splice(index, 1);
+    const current = this.profileData();
+    this.profileData.set({
+      ...current,
+      allergies: current.allergies.filter((_, i) => i !== index),
+    });
   }
 
   saveProfile() {
-    this.isLoading = true;
+    this.isLoading.set(true);
+    const current = this.profileData();
     
-    // Guardar solo birthDate y allergies, no el nombre
+    // Validar que birthDate tenga el formato correcto YYYY-MM-DD
+    if (!current.birthDate) {
+      alert('La fecha de nacimiento es requerida');
+      this.isLoading.set(false);
+      return;
+    }
+
+    // Asegurar formato YYYY-MM-DD
+    let formattedBirthDate = current.birthDate;
+    if (formattedBirthDate.includes('T')) {
+      // Si viene con timestamp, extraer solo la fecha
+      formattedBirthDate = formattedBirthDate.split('T')[0];
+    }
+    
+    // Guardar todos los datos del perfil
     const profileDataToSave = {
-      birthDate: this.profileData.birthDate,
-      allergies: this.profileData.allergies,
+      name: current.name.trim(),
+      birthDate: formattedBirthDate,
+      allergies: current.allergies && current.allergies.length > 0 ? current.allergies : [],
     };
     
-    // Guardar datos en el backend
-    this.apiService.post('/profiles', profileDataToSave).subscribe({
+    console.log('Guardando perfil:', profileDataToSave);
+    console.log('ID del perfil:', current.id);
+    
+    // Usar PUT si existe ID (actualizar perfil existente), POST si es nuevo
+    const request$ = current.id && current.id.trim()
+      ? this.apiService.put(`/profiles/${current.id}`, profileDataToSave)
+      : this.apiService.post('/profiles', profileDataToSave);
+    
+    const action = current.id && current.id.trim() ? 'actualizar' : 'crear';
+    
+    request$.subscribe({
       next: (response: any) => {
-        this.isLoading = false;
-        alert(`✓ Perfil actualizado`);
+        this.isLoading.set(false);
+        console.log(`Perfil ${action}izado:`, response);
+        alert(`✓ Perfil ${action}izado`);
         this.router.navigate(['/account']);
       },
       error: (error) => {
-        this.isLoading = false;
-        console.error('Error al guardar perfil:', error);
-        alert('Error al guardar el perfil');
+        this.isLoading.set(false);
+        console.error(`Error al ${action} perfil:`, error);
+        const errorMsg = error.error?.message || error.message || 'Error desconocido';
+        console.error('Detalle del error:', error.error);
+        alert(`Error al ${action} el perfil: ${errorMsg}`);
       },
     });
   }

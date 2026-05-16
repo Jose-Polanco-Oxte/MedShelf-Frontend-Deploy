@@ -4,7 +4,7 @@
     <a routerLink="/account" class="btn-back">
       <lucide-angular [img]="icons.arrowLeft" size="24"></lucide-angular>
     </a>
-    <h2>Editar Perfil</h2>
+    <h2>Editar Información</h2>
     <div style="width: 48px;"></div>
   </div>
 
@@ -15,10 +15,10 @@
       <input 
         type="text" 
         id="name" 
-        [(ngModel)]="profileData.name"
+        [ngModel]="profileData().name"
+        (ngModelChange)="updateName($event)"
         name="name"
-        disabled
-        readonly />
+        required />
     </div>
 
     <!-- Fecha de nacimiento -->
@@ -27,7 +27,8 @@
       <input 
         type="date" 
         id="birthDate" 
-        [(ngModel)]="profileData.birthDate" 
+        [ngModel]="profileData().birthDate"
+        (ngModelChange)="updateBirthDate($event)"
         name="birthDate"
         required />
     </div>
@@ -39,14 +40,15 @@
         <input 
           type="text" 
           id="allergyInput" 
-          [(ngModel)]="allergyInput" 
+          [ngModel]="allergyInput()"
+          (ngModelChange)="allergyInput.set($event)"
           name="allergyInput"
           placeholder="Ej. Penicilina" />
         <button type="button" class="btn-add-allergy" (click)="addAllergy()">+</button>
       </div>
-      @if (profileData.allergies.length > 0) {
+      @if (profileData().allergies.length > 0) {
         <div class="allergies-list">
-          @for (allerge of profileData.allergies; let i = $index; track i) {
+          @for (allerge of profileData().allergies; let i = $index; track i) {
             <span class="allergy-badge">
               {{ allerge }}
               <button type="button" class="btn-remove" (click)="removeAllergy(i)">✕</button>
