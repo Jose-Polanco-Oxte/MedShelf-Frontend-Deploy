@@ -3,74 +3,58 @@
     <h2>Tratamientos</h2>
   </div>
 
+  @if (errorMessage) {
+    <div class="form-error">
+      <p>{{ errorMessage }}</p>
+    </div>
+  }
+
   <!-- Medicamentos activos -->
   <div class="active-section">
     <p class="section-title">MEDICAMENTOS ACTIVOS</p>
-    <div class="active-scroll">
-      @for (med of meds; track med.id) {
-        <div class="active-card">
-          <div class="active-icon">💊</div>
-          <p class="active-name">{{ med.name }}</p>
-          <p class="active-dosage">{{ med.dosage }}</p>
-          <div class="active-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width]="med.progress + '%'"></div>
+
+    @if (isLoading) {
+      <p class="state-msg">Cargando...</p>
+    } @else if (treatments.length === 0) {
+      <p class="state-msg">No hay tratamientos activos.</p>
+    } @else {
+      <div class="active-scroll">
+        @for (treatment of treatments; track treatment.id) {
+          @if (isActive(treatment)) {
+            <div class="active-card">
+              <div class="active-icon">💊</div>
+              <p class="active-name">{{ treatment.itemId }}</p>
+              <p class="active-dosage">{{ treatment.doseQuantity }}</p>
             </div>
-            <span class="active-days">{{ med.daysLeft }} días</span>
-          </div>
-        </div>
-      }
-    </div>
+          }
+        }
+      </div>
+    }
   </div>
 
   <!-- Lista de tomas -->
   <div class="treatment-list">
-    <p class="time-label">Mañana</p>
+    <p class="time-label">Tratamientos</p>
     <div class="treatment-group">
-      @for (med of meds; track med.id) {
-        <div class="treatment-card">
-          <div class="left">
-            <div class="time">{{ med.time }}</div>
+      @if (!isLoading) {
+        @for (treatment of treatments; track treatment.id) {
+          <div class="treatment-card">
+            <div class="center">
+              <h3>{{ treatment.itemId }}</h3>
+              <p>{{ formatFrequency(treatment) }}</p>
+            </div>
+            <div class="right">
+              <button [ngClass]="isActive(treatment) ? 'take-btn pending' : 'take-btn taken'">
+                {{ treatment.status }}
+              </button>
+            </div>
           </div>
-          <div class="center">
-            <h3>{{ med.name }}</h3>
-            <p>{{ med.dosage }}</p>
-          </div>
-          <div class="right">
-            <button [ngClass]="med.status === 'taken' ? 'take-btn taken' : 'take-btn pending'">
-              {{ med.status === 'taken' ? 'Tomado' : 'Pendiente' }}
-            </button>
-          </div>
-        </div>
+        }
+
+        @if (hasMore) {
+          <button class="load-more-btn" (click)="loadMore()">Cargar más</button>
+        }
       }
-    </div>
-
-    <p class="time-label">Tarde</p>
-    <div class="treatment-group">
-      <div class="treatment-card">
-        <div class="left"><div class="time">14:00</div></div>
-        <div class="center">
-          <h3>Ibuprofeno</h3>
-          <p>1 cápsula • Cada 8 hrs</p>
-        </div>
-        <div class="right">
-          <button class="take-btn taken">Tomado</button>
-        </div>
-      </div>
-    </div>
-
-    <p class="time-label">Noche</p>
-    <div class="treatment-group">
-      <div class="treatment-card">
-        <div class="left"><div class="time">22:00</div></div>
-        <div class="center">
-          <h3>Amoxicilina</h3>
-          <p>500mg • 7 días</p>
-        </div>
-        <div class="right">
-          <button class="take-btn pending">Pendiente</button>
-        </div>
-      </div>
     </div>
   </div>
 
