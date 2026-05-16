@@ -7,7 +7,7 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { TreatmentsService } from '../../../../core/services/treatments.service';
 import { ItemsService } from '../../../../core/services/items.service'; // ajusta si ItemResponse no es exportado
 import { HousesService } from '../../../../core/services/houses.service';
-import { ProfilesService, ProfileResponse } from '../../../../core/services/profiles.service';
+import { ProfilesService, Profile } from '../../../../core/services/profiles.service';
 
 interface ItemOption {
   id: string;
@@ -52,7 +52,7 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
     doseQuantity: '',
   };
 
-  profiles: ProfileResponse[] = [];
+  profiles: Profile[] = [];
   isLoadingProfiles = false;
 
   isLoading = false;
