@@ -46,6 +46,47 @@
 
 @if (!isLoading() && !errorMessage() && accountInfo()) {
   <div class="account-container">    
+    <!-- Modal de confirmación de eliminación -->
+    @if (showDeleteModal()) {
+      <div class="modal-backdrop" (click)="cancelDelete()"></div>
+      <div class="delete-confirmation-modal">
+        <div class="modal-header">
+          <h3>Eliminar cuenta</h3>
+        </div>
+        <div class="modal-body">
+          <p class="modal-warning">
+            Esta acción eliminará tu cuenta de forma permanente y no se puede deshacer.
+          </p>
+          <p class="modal-instruction">
+            Escribe <strong>ELIMINAR</strong> para confirmar:
+          </p>
+          <input
+            type="text"
+            class="modal-input"
+            [(ngModel)]="deleteConfirmationInput"
+            name="deleteConfirmation"
+            placeholder="Escribe ELIMINAR"
+            (keyup.enter)="confirmDelete()"
+          />
+          @if (deleteConfirmationError()) {
+            <p class="modal-error">{{ deleteConfirmationError() }}</p>
+          }
+        </div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-cancel" (click)="cancelDelete()" type="button">
+            Cancelar
+          </button>
+          <button
+            class="modal-btn modal-btn-delete"
+            (click)="confirmDelete()"
+            [disabled]="isDeletingAccount()"
+            type="button"
+          >
+            {{ isDeletingAccount() ? 'Eliminando...' : 'Eliminar cuenta' }}
+          </button>
+        </div>
+      </div>
+    }    
     <!-- Perfil principal - Información de Cuenta -->
     <div class="main-account">
       <div class="avatar-wrapper">
@@ -144,6 +185,19 @@
         <span>{{ currentTheme === 'light' ? 'Tema Oscuro' : 'Tema Claro' }}</span>
       </button>
       <button class="btn-logout" (click)="logout()">Cerrar sesión</button>
+    </div>
+
+    <div class="danger-zone">
+      <p class="section-title danger-title">ZONA DE PELIGRO</p>
+      <p class="danger-description">
+        Esta accion eliminara tu cuenta de forma permanente.
+      </p>
+      <button class="btn-danger" (click)="deleteAccount()" [disabled]="isDeletingAccount()">
+        {{ isDeletingAccount() ? 'Eliminando cuenta...' : 'Eliminar cuenta' }}
+      </button>
+      @if (deleteErrorMessage()) {
+        <p class="danger-error">{{ deleteErrorMessage() }}</p>
+      }
     </div>
   </div>
 }

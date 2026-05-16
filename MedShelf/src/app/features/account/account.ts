@@ -1,13 +1,14 @@
 import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ThemeService, type Theme } from '../../shared/services/theme.service';
-import { LucideAngularModule, Moon, Sun, Plus, ArrowLeft, Save } from 'lucide-angular';
+import { LucideAngularModule, Moon, Sun, Plus, ArrowLeft, Save, X } from 'lucide-angular';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../shared/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfilesService } from '../../core/services/profiles.service';
 import { Subject } from 'rxjs';
-import { takeUntil, switchMap } from 'rxjs/operators';
+import { takeUntil, switchMap, finalize } from 'rxjs/operators';
 
 interface AccountInfo {
   name?: string;
@@ -24,17 +25,22 @@ interface FamilyProfile {
 
 @Component({
   selector: 'app-account',
-  imports: [CommonModule, LucideAngularModule, RouterLink],
+  imports: [CommonModule, LucideAngularModule, RouterLink, FormsModule],
   templateUrl: './account.html',
   styleUrl: './account.css',
 })
 export class Account implements OnInit, OnDestroy {
   currentTheme: Theme = 'light';
-  icons = { moon: Moon, sun: Sun, plus: Plus, arrowLeft: ArrowLeft, save: Save };
+  icons = { moon: Moon, sun: Sun, plus: Plus, arrowLeft: ArrowLeft, save: Save, close: X };
   isLoading = signal(false);
+  isDeletingAccount = signal(false);
+  deleteErrorMessage = signal('');
   errorMessage = signal('');
   accountInfo = signal<AccountInfo | null>(null);
   familyProfiles = signal<FamilyProfile[]>([]);
+  showDeleteModal = signal(false);
+  deleteConfirmationInput = signal('');
+  deleteConfirmationError = signal('');
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -151,6 +157,51 @@ export class Account implements OnInit, OnDestroy {
         console.error('Error during logout:', error);
       },
     });
+  }
+
+  deleteAccount() {
+    this.openDeleteModal();
+  }
+
+  openDeleteModal() {
+    this.deleteConfirmationInput.set('');
+    this.deleteConfirmationError.set('');
+    this.showDeleteModal.set(true);
+  }
+
+  cancelDelete() {
+    this.showDeleteModal.set(false);
+    this.deleteConfirmationInput.set('');
+    this.deleteConfirmationError.set('');
+  }
+
+  confirmDelete() {
+    const input = this.deleteConfirmationInput().trim();
+    if (input !== 'ELIMINAR') {
+      this.deleteConfirmationError.set('Debes escribir ELIMINAR para confirmar');
+      return;
+    }
+
+    this.isDeletingAccount.set(true);
+    this.apiService
+      .delete('/auth/account')
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isDeletingAccount.set(false)),
+      )
+      .subscribe({
+        next: () => {
+          this.authService.isAuthenticated.set(false);
+          this.authService.currentUser.set(null);
+          this.router.navigate(['/account-deleted']);
+        },
+        error: (error) => {
+          console.error('Error deleting account:', error);
+          const errorMsg = error.error?.message || error.message || 'No se pudo eliminar la cuenta';
+          this.deleteErrorMessage.set(errorMsg);
+          this.showDeleteModal.set(false);
+        },
+      });
   }
 
   getInitial(name: string): string {
