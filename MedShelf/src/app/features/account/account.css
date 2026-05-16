@@ -1,5 +1,5 @@
 /* ── Base ── */
-.profile-container {
+.account-container {
   padding: 1.25rem 1rem 100px;
   background: var(--page-background);
   min-height: 100vh;
@@ -23,7 +23,7 @@
 }
 
 /* ── Perfil principal ── */
-.main-profile {
+.main-account {
   margin-top: 1.25rem;
   margin-bottom: 1.5rem;
 }
@@ -56,20 +56,40 @@
   box-shadow: none;
 }
 
-.profile-name {
+.avatar.small.add-account {
+  background: var(--primary-blue);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+  /* Anular estilos por defecto del botón */
+  width: auto;
+  padding: auto;
+  margin-top: 0;
+  min-height: auto;
+  border-radius: 50%;
+}
+
+.avatar.small.add-account:active {
+  opacity: 0.85;
+}
+
+.account-name {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--heading-color);
   margin: 0 0 0.5rem;
 }
 
-.profile-sub {
+.account-sub {
   font-size: 0.95rem;
   color: var(--text-tertiary);
   margin: 0 0 1rem;
 }
 
-.profile-badges {
+.account-badges {
   display: flex;
   gap: 0.75rem;
   justify-content: center;
@@ -190,12 +210,12 @@
 }
 
 /* ── Perfiles familia ── */
-.profiles-section {
+.accounts-section {
   text-align: left;
   margin-bottom: 1.5rem;
 }
 
-.profiles-list {
+.accounts-list {
   display: flex;
   gap: 1.25rem;
   overflow-x: auto;
@@ -204,11 +224,11 @@
   scrollbar-width: none;
 }
 
-.profiles-list::-webkit-scrollbar {
+.accounts-list::-webkit-scrollbar {
   display: none;
 }
 
-.profile-card {
+.account-card {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -217,43 +237,18 @@
   cursor: pointer;
 }
 
-.profile-card p {
+.account-card p {
   font-size: 0.9rem;
   margin: 0;
 }
 
-.profile-card small {
+.account-card small {
   color: var(--text-tertiary);
   font-size: 0.78rem;
 }
 
-.add-btn {
-  background: var(--primary-blue);
-  color: white;
-  font-size: 1.75rem;
-  font-weight: 300;
-  text-decoration: none;
-}
-
-.add-btn a {
-  color: white;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.add-btn a:active,
-.add-btn a:visited {
-  color: white;
-}
-
-.add-icon {
-  color: white !important;
-}
-
 /* ── Botón editar ── */
-.profile-container button {
+.account-container button {
   width: 100%;
   padding: 1rem;
   border-radius: 12px;
@@ -282,7 +277,7 @@
   border: none;
 }
 
-.profile-container button:active {
+.account-container button:active {
   background: var(--bg-primary);
 }
 
@@ -373,13 +368,13 @@
   margin: 0 auto 0.5rem;
 }
 
-.skeleton-profile-name {
+.skeleton-account-name {
   height: 1rem;
   width: 80%;
   margin: 0.5rem auto 0.25rem;
 }
 
-.skeleton-profile-relation {
+.skeleton-account-relation {
   height: 0.75rem;
   width: 60%;
   margin: 0.25rem auto 0.5rem;
