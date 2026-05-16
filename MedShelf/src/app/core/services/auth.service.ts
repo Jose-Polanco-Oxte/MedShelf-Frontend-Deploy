@@ -64,7 +64,7 @@ export class AuthService {
   //refrsh?
 
   hydrate() {
-    return this.api.get<User>(`/auth/me`).pipe(
+    return this.api.get<User>(`/auth/account`).pipe(
       tap((user) => {
         this.isAuthenticated.set(true);
         this.currentUser.set(user);
