@@ -14,6 +14,7 @@ import { AddTreatmentForm } from './features/meds/components/add-tratments-form/
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { SuccessfulRegistration } from './features/auth/components/successfulRegistration/successfulRegistration';
+import { AccountDeleted } from './features/auth/components/account-deleted/account-deleted';
 
 export const routes: Routes = [
   {
@@ -50,4 +51,5 @@ export const routes: Routes = [
   { path: 'login', component: Login, canActivate: [guestGuard] }, 
   { path: 'register', component: Register, canActivate: [guestGuard] }, 
   { path: 'successful-registration', component: SuccessfulRegistration },
+  { path: 'account-deleted', component: AccountDeleted },
 ];

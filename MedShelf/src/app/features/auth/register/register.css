@@ -185,3 +185,8 @@ main {
   color: #666;
   font-size: 0.9rem;
 }
+
+small {
+  color: var(--primary-contrast);
+  font-size: 0.85rem;
+}
