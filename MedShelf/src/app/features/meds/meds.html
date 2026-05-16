@@ -1,0 +1,65 @@
+<div class="treatment-container">
+  <div class="header">
+    <h2>Tratamientos</h2>
+  </div>
+
+  @if (errorMessage) {
+    <div class="form-error">
+      <p>{{ errorMessage }}</p>
+    </div>
+  }
+
+  <!-- Medicamentos activos -->
+  <div class="active-section">
+    <p class="section-title">MEDICAMENTOS ACTIVOS</p>
+
+    @if (isLoading) {
+      <p class="state-msg">Cargando...</p>
+    } @else if (treatments.length === 0) {
+      <p class="state-msg">No hay tratamientos activos.</p>
+    } @else {
+      <div class="active-scroll">
+        @for (treatment of treatments; track treatment.id) {
+          @if (isActive(treatment)) {
+            <div class="active-card">
+              <div class="active-icon">💊</div>
+              <p class="active-name">{{ treatment.itemId }}</p>
+              <p class="active-dosage">{{ treatment.doseQuantity }}</p>
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Lista de tomas -->
+  <div class="treatment-list">
+    <p class="time-label">Tratamientos</p>
+    <div class="treatment-group">
+      @if (!isLoading) {
+        @for (treatment of treatments; track treatment.id) {
+          <div class="treatment-card">
+            <div class="center">
+              <h3>{{ treatment.itemId }}</h3>
+              <p>{{ formatFrequency(treatment) }}</p>
+            </div>
+            <div class="right">
+              <button [ngClass]="isActive(treatment) ? 'take-btn pending' : 'take-btn taken'">
+                {{ treatment.status }}
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (hasMore) {
+          <button class="load-more-btn" (click)="loadMore()">Cargar más</button>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- Botón de Acción Flotante -->
+  <a class="fab" routerLink="add-treatment" title="Agregar tratamiento">
+    <lucide-angular [img]="icons.plus" size="28" class="fab-icon"></lucide-angular>
+  </a>
+</div>

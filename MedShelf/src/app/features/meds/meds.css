@@ -1,0 +1,250 @@
+/* ── Base ── */
+.treatment-container {
+  padding: 1rem 1rem 100px;
+  background: var(--page-background);
+  min-height: 100vh;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ── Header ── */
+.header {
+  margin-bottom: 1.25rem;
+}
+
+.header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--heading-color);
+  margin: 0;
+}
+
+/* ── Section title ── */
+.section-title {
+  color: var(--section-label-color);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin: 0 0 0.75rem;
+}
+
+/* ── Active medicines ── */
+.active-section {
+  margin-bottom: 1.5rem;
+}
+
+.active-scroll {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.active-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.active-card {
+  min-width: 140px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 1rem 0.75rem;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.active-icon {
+  font-size: 1.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.active-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--heading-color);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.active-dosage {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+.active-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 5px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary-blue);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.active-days {
+  font-size: 0.8rem;
+  color: var(--primary-blue);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Lista de tomas ── */
+.treatment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.time-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--section-label-color);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.treatment-group {
+  background: var(--card-bg);
+  border: 1px solid var(--border-lighter);
+  border-radius: 14px;
+  padding: 0.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Card individual ── */
+.treatment-card {
+  display: flex;
+  align-items: center;
+  padding: 1rem 0;
+  min-height: 70px;
+}
+
+.treatment-card:not(:last-child) {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.treatment-card:active {
+  background: #f9fafb;
+}
+
+/* Hora */
+.left {
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.time {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--heading-color);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Info */
+.center {
+  flex: 1;
+  padding: 0 0.75rem;
+  min-width: 0;
+}
+
+.center h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.center p {
+  margin: 0.2rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Botón estado */
+.right {
+  flex-shrink: 0;
+}
+
+.take-btn {
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  transition: opacity 0.15s;
+  min-height: 40px;
+  min-width: 80px;
+}
+
+.take-btn:active {
+  opacity: 0.75;
+}
+
+.take-btn.taken {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.take-btn.pending {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+/* Floating Action Button */
+.fab {
+  position: fixed;
+  bottom: 4.5rem;
+  right: 1rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--brand-color);
+  border: none;
+  color: var(--secondary-contrast);
+  font-size: 1.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.fab-icon {
+  color: var(--secondary-contrast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fab:active {
+  transform: scale(0.92);
+}
