@@ -9,7 +9,7 @@ interface ListTreatmentsParams {
 }
 
 interface CreateTreatmentRequest {
-  itemId: string;
+  productId: string;
   dose: number;
   frequencyHours: number;
   startDate: string;
@@ -33,18 +33,15 @@ interface profile {
   name: string;
 }
 
-interface Item {
+interface Product {
   id: string;
-  product: {
-    id: string;
-    name: string;
-  };
+  name: string;
 }
 
 export interface TreatmentResponse {
   id: string;
   profile: profile;
-  item: Item;
+  product: Product;
   status: string;
   dose: number;
   frequencyHours: number;
@@ -55,7 +52,7 @@ export interface TreatmentResponse {
 
 export interface ConsumptionResponse {
   id: string;
-  item: Item;
+  product: Product;
   amount: number;
   consumedAt: string;
 }

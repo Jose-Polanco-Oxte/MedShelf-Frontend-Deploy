@@ -8,6 +8,20 @@ import { ItemsService } from '../../core/services/items.service';
 import { ConsumptionsService } from '../../core/services/consumptions.service';
 import { signal } from '@angular/core';
 
+interface ExpandedItem {
+  id: string;
+  product?: {
+    id: string;
+    name: string;
+  };
+  place?: {
+    id: string;
+    name: string;
+  };
+  availableContent?: number;
+  expirationDate?: string;
+}
+
 @Component({
   selector: 'app-meds',
   imports: [CommonModule, LucideAngularModule, RouterLink],
@@ -26,8 +40,8 @@ export class Meds implements OnInit {
   treatments = signal<TreatmentResponse[]>([]);
   expandedId = signal<string | null>(null);
 
-  // map de treatmentId -> item detail
-  itemDetails = signal<Record<string, any>>({});
+  // map de treatmentId -> items del medicamento
+  itemDetails = signal<Record<string, ExpandedItem[]>>({});
 
   get activeTreatments(): TreatmentResponse[] {
     return this.treatments().filter((t) => t.status === 'active');
@@ -82,22 +96,28 @@ export class Meds implements OnInit {
       return;
     }
 
-    // si ya tenemos el detalle cacheado, solo expandir
+    // si ya tenemos los items cacheados, solo expandir
     if (this.itemDetails()[treatmentId]) {
       this.expandedId.set(treatmentId);
       return;
     }
 
-    // cargar detalle del item y guardar bajo treatmentId
-    this.itemsService.getItemDetails(treatment.item.id).subscribe({
-      next: (item) => {
-        this.itemDetails.update((prev) => ({ ...prev, [treatmentId]: item }));
-        this.expandedId.set(treatmentId);
-      },
-      error: () => {
-        this.errorMessage = 'Error al cargar los detalles del medicamento';
-      },
-    });
+    // cargar items del botiquín y guardar bajo treatmentId
+    this.itemsService
+      .getItemsInMedkit(treatment.product.id, { 'filter[productId]': treatment.product.id })
+      .subscribe({
+        next: (response: any) => {
+          this.itemDetails.update((prev) => ({
+            ...prev,
+            [treatmentId]: (response?.items ?? []) as ExpandedItem[],
+          }));
+          this.expandedId.set(treatmentId);
+          console.log('Items del tratamiento cargados:', response);
+        },
+        error: () => {
+          this.errorMessage = 'Error al cargar los detalles del medicamento';
+        },
+      });
   }
 
   registerConsumption(itemId: string, amount: number): void {
