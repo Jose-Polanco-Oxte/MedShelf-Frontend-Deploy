@@ -25,7 +25,7 @@ export class EditInfo implements OnInit {
   private router = inject(Router);
   private apiService = inject(ApiService);
   private cdr = inject(ChangeDetectorRef);
-  
+
   profileData = signal<ProfileData>({
     name: '',
     email: '',
@@ -48,25 +48,27 @@ export class EditInfo implements OnInit {
     this.apiService.get<any>('/auth/account').subscribe({
       next: (authData) => {
         console.log('Datos de auth/account:', authData);
-        
+
         // Obtener datos del perfil (alergias, fecha de nacimiento) desde /profiles
         this.apiService.get<any>('/profiles').subscribe({
           next: (response) => {
             console.log('Respuesta completa de /profiles:', response);
             const profiles = response.items ?? [];
             console.log('Perfiles array:', profiles);
-            
+
             if (profiles && profiles.length > 0) {
               const userProfile = profiles[0]; // El primer perfil es del usuario
               console.log('Primer perfil (usuario):', userProfile);
               console.log('Alergias del perfil:', userProfile.allergies);
-              
+
+              const birthDate = this.normalizeDateInput(userProfile.birthDate);
+
               this.profileData.set({
                 id: authData.id || '',
                 profileId: userProfile.id || '',
                 name: authData.name || '',
                 email: authData.email || '',
-                birthDate: userProfile.birthDate || '',
+                birthDate,
                 allergies: userProfile.allergies || [],
               });
               console.log('Perfil cargado en el componente:', this.profileData());
@@ -140,7 +142,7 @@ export class EditInfo implements OnInit {
     this.isLoading.set(true);
     const current = this.profileData();
     console.log('Datos actuales del perfil a guardar:', current);
-    
+
     // Validar que birthDate tenga el formato correcto YYYY-MM-DD
     if (!current.birthDate) {
       this.showError('La fecha de nacimiento es requerida');
@@ -149,43 +151,41 @@ export class EditInfo implements OnInit {
     }
 
     // Asegurar formato YYYY-MM-DD
-    let formattedBirthDate = current.birthDate;
-    if (formattedBirthDate.includes('T')) {
-      // Si viene con timestamp, extraer solo la fecha
-      formattedBirthDate = formattedBirthDate.split('T')[0];
-    }
-    
+    const formattedBirthDate = this.normalizeDateInput(current.birthDate);
+
     // 1. Actualizar nombre y email en /auth/account usando PATCH
     const authDataToSave = {
       name: current.name.trim(),
       email: current.email.trim(),
     };
-    
+
     console.log('Guardando datos de cuenta:', authDataToSave);
-    
+
     this.apiService.patch('/auth/account', authDataToSave).subscribe({
       next: (authResponse: any) => {
         console.log('Datos de cuenta actualizados:', authResponse);
-        
+
         // 2. Después de actualizar /auth/account, actualizar /profiles
         const profileDataToSave = {
           name: current.name.trim(),
           birthDate: formattedBirthDate,
           allergies: current.allergies && current.allergies.length > 0 ? current.allergies : [],
         };
-        
+
         // console.log('Guardando datos de perfil:', profileDataToSave);
         // console.log('Array de alergias:', current.allergies);
         // console.log('Cantidad de alergias:', current.allergies?.length);
         // console.log('ID del perfil:', current.profileId);
-        
+
         // Usar PATCH si existe profileId (actualizar perfil existente), POST si es nuevo
-        const profileRequest$ = current.profileId && current.profileId.trim()
-          ? this.apiService.patch(`/profiles/${current.profileId}`, profileDataToSave)
-          : this.apiService.post('/profiles', profileDataToSave);
-        
-        const profileAction = current.profileId && current.profileId.trim() ? 'actualizar' : 'crear';
-        
+        const profileRequest$ =
+          current.profileId && current.profileId.trim()
+            ? this.apiService.patch(`/profiles/${current.profileId}`, profileDataToSave)
+            : this.apiService.post('/profiles', profileDataToSave);
+
+        const profileAction =
+          current.profileId && current.profileId.trim() ? 'actualizar' : 'crear';
+
         profileRequest$.subscribe({
           next: (profileResponse: any) => {
             this.isLoading.set(false);
@@ -241,5 +241,11 @@ export class EditInfo implements OnInit {
       this.isToastExiting = false;
       this.cdr.detectChanges();
     }, 300);
+  }
+
+  private normalizeDateInput(value: string) {
+    if (!value) return '';
+
+    return value.includes('T') ? value.split('T')[0] : value.slice(0, 10);
   }
 }

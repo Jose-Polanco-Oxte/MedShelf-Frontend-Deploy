@@ -12,7 +12,12 @@
     [ngClass]="{ 'toast-notification': true, 'toast-error': true, 'toast-exit': isToastExiting }"
   >
     <div class="toast-content">
-      <lucide-icon name="alert-circle" [img]="icons.alertCircle" [size]="20" class="toast-icon"></lucide-icon>
+      <lucide-icon
+        name="alert-circle"
+        [img]="icons.alertCircle"
+        [size]="20"
+        class="toast-icon"
+      ></lucide-icon>
       <div class="toast-message">
         <p>{{ error }}</p>
       </div>
@@ -42,6 +47,7 @@
       <div
         *ngFor="let profile of profiles; trackBy: trackByProfile"
         class="profile-card"
+        (click)="openProfile(profile.id)"
       >
         <div class="avatar">
           <span class="initials">{{ profile.initials }}</span>
@@ -59,7 +65,11 @@
     <div class="grid-container">
       <ng-container *ngIf="isLoading">
         <!-- Skeletons mientras carga -->
-        <div class="location-card" *ngFor="let i of [1, 2, 3]" style="opacity: 0.4; pointer-events: none;">
+        <div
+          class="location-card"
+          *ngFor="let i of [1, 2, 3]"
+          style="opacity: 0.4; pointer-events: none"
+        >
           <div class="icon"></div>
           <div class="location-info">
             <h3>Cargando…</h3>
@@ -71,7 +81,7 @@
         <div
           *ngFor="let location of locations; trackBy: trackByLocation"
           class="location-card"
-          (click)="loadLocationDetails(location.id)"
+          (click)="openPlace(location.id, location.name)"
           style="position: relative"
         >
           <button
@@ -87,7 +97,9 @@
           </div>
           <div class="location-info">
             <h3>{{ location.name }}</h3>
-            <span class="count">{{ location.quantity }} medicamento{{ location.quantity !== 1 ? 's' : '' }}</span>
+            <span class="count"
+              >{{ location.quantity }} medicamento{{ location.quantity !== 1 ? 's' : '' }}</span
+            >
           </div>
         </div>
 
@@ -105,4 +117,17 @@
       </button>
     </div>
   </div>
+
+  <app-profile-detail-modal
+    [open]="profileModalOpen"
+    [profileId]="selectedProfileId"
+    (closed)="closeProfileModal()"
+  ></app-profile-detail-modal>
+
+  <app-place-items-modal
+    [open]="placeModalOpen"
+    [placeId]="selectedPlaceId"
+    [placeName]="selectedPlaceName"
+    (closed)="closePlaceModal()"
+  ></app-place-items-modal>
 </div>

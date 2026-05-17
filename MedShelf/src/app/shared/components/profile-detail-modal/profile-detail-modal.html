@@ -1,0 +1,76 @@
+@if (open) {
+  <div class="modal-backdrop" (click)="close()"></div>
+  <section class="profile-modal" role="dialog" aria-modal="true">
+    <header class="modal-header">
+      <div>
+        <p class="modal-kicker">Detalle del perfil</p>
+        <h3>{{ profile()?.name || 'Perfil' }}</h3>
+      </div>
+      <button class="modal-close" type="button" (click)="close()">
+        <lucide-angular [img]="icons.close" size="18"></lucide-angular>
+      </button>
+    </header>
+
+    <div class="modal-body">
+      @if (loading()) {
+        <div class="modal-state">Cargando perfil...</div>
+      } @else if (error()) {
+        <div class="modal-state modal-error">
+          <lucide-angular [img]="icons.alertCircle" size="18"></lucide-angular>
+          <span>{{ error() }}</span>
+        </div>
+      } @else if (profile()) {
+        <div class="profile-hero">
+          <div class="profile-avatar">{{ profile()?.name?.charAt(0)?.toUpperCase() || 'P' }}</div>
+          <div class="profile-title-group">
+            <p class="profile-name">{{ profile()?.name }}</p>
+            <p class="profile-meta">{{ profile()?.relationship || 'Familiar' }}</p>
+          </div>
+        </div>
+
+        <div class="profile-grid">
+          <div class="profile-info">
+            <div class="info-row">
+              <span class="label">Fecha de nacimiento</span>
+              <span class="value">{{ formatDate(profile()?.birthDate) }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Edad</span>
+              <span class="value">{{
+                getAge(profile()?.birthDate)
+                  ? getAge(profile()?.birthDate) + ' años'
+                  : 'Por definir'
+              }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Alergias</span>
+              <span class="value value-wrap">
+                @if (profile()?.allergies?.length) {
+                  {{ profile()?.allergies?.join(', ') }}
+                } @else {
+                  Por definir
+                }
+              </span>
+            </div>
+          </div>
+
+          <div class="profile-meta-card">
+            <p class="meta-card-label">Creado</p>
+            <strong>{{ formatDateTime(profile()?.createdAt) }}</strong>
+            <p class="meta-card-hint">Este perfil se sincroniza desde la API.</p>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          @if (getProfileRoute()) {
+            <a class="edit-button" [routerLink]="getProfileRoute()!" (click)="close()">
+              <lucide-angular [img]="icons.edit" size="18"></lucide-angular>
+              Editar perfil
+            </a>
+          }
+          <button class="secondary-button" type="button" (click)="close()">Cerrar</button>
+        </div>
+      }
+    </div>
+  </section>
+}

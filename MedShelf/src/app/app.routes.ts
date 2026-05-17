@@ -6,6 +6,7 @@ import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
 import { Account } from './features/account/account';
 import { EditInfo } from './features/account/components/edit-info/edit-info';
+import { EditProfile } from './features/account/components/edit-profile/edit-profile';
 import { AddFamily } from './features/account/components/add-family/add-family';
 import { AddLocation } from './features/home/components/add-location/add-location';
 import { Meds } from './features/meds/meds';
@@ -20,7 +21,7 @@ export const routes: Routes = [
   {
     path: '',
     component: MainLayout,
-    canActivate: [authGuard], 
+    canActivate: [authGuard],
     children: [
       { path: '', component: Home },
       { path: 'add-location', component: AddLocation },
@@ -36,6 +37,7 @@ export const routes: Routes = [
         children: [
           { path: '', component: Account },
           { path: 'edit', component: EditInfo },
+          { path: 'profiles/:profileId/edit', component: EditProfile },
           { path: 'add-family', component: AddFamily },
         ],
       },
@@ -48,8 +50,8 @@ export const routes: Routes = [
       },
     ],
   },
-  { path: 'login', component: Login, canActivate: [guestGuard] }, 
-  { path: 'register', component: Register, canActivate: [guestGuard] }, 
+  { path: 'login', component: Login, canActivate: [guestGuard] },
+  { path: 'register', component: Register, canActivate: [guestGuard] },
   { path: 'successful-registration', component: SuccessfulRegistration },
   { path: 'account-deleted', component: AccountDeleted },
 ];

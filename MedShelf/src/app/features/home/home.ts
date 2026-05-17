@@ -5,6 +5,8 @@ import { ThemeService } from '../../shared/services/theme.service';
 import { ApiService } from '../../shared/services/api.service';
 import { ProfilesService } from '../../core/services/profiles.service';
 import { RouterLink } from '@angular/router';
+import { ProfileDetailModal } from '../../shared/components/profile-detail-modal/profile-detail-modal';
+import { PlaceItemsModal } from '../../shared/components/place-items-modal/place-items-modal';
 
 interface HouseOwner {
   id: string;
@@ -34,7 +36,7 @@ interface ProfileViewModel {
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, LucideAngularModule, RouterLink],
+  imports: [CommonModule, LucideAngularModule, RouterLink, ProfileDetailModal, PlaceItemsModal],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -50,6 +52,11 @@ export class Home implements OnInit {
   isLoading = true;
   error: string | null = null;
   isToastExiting = false;
+  profileModalOpen = false;
+  selectedProfileId: string | null = null;
+  placeModalOpen = false;
+  selectedPlaceId: string | null = null;
+  selectedPlaceName = '';
   private errorTimeoutId: any;
 
   icons = {
@@ -72,6 +79,28 @@ export class Home implements OnInit {
 
   trackByProfile(index: number, item: ProfileViewModel) {
     return item?.id ?? index;
+  }
+
+  openProfile(profileId: string) {
+    this.selectedProfileId = profileId;
+    this.profileModalOpen = true;
+  }
+
+  closeProfileModal() {
+    this.profileModalOpen = false;
+    this.selectedProfileId = null;
+  }
+
+  openPlace(placeId: string, placeName: string) {
+    this.selectedPlaceId = placeId;
+    this.selectedPlaceName = placeName;
+    this.placeModalOpen = true;
+  }
+
+  closePlaceModal() {
+    this.placeModalOpen = false;
+    this.selectedPlaceId = null;
+    this.selectedPlaceName = '';
   }
 
   loadHouseData() {

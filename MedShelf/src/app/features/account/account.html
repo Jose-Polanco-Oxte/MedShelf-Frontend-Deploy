@@ -15,7 +15,7 @@
     <div class="info-section">
       <p class="section-title">INFORMACIÓN</p>
       <div class="info-card">
-        <div class="info-item" *ngFor="let i of [1,2]">
+        <div class="info-item" *ngFor="let i of [1, 2]">
           <div class="skeleton-line skeleton-info-label"></div>
           <div class="skeleton-line skeleton-info-value"></div>
         </div>
@@ -26,7 +26,7 @@
     <div class="accounts-section">
       <p class="section-title">FAMILIA</p>
       <div class="accounts-list">
-        <div class="account-card skeleton-card" *ngFor="let i of [1,2,3]">
+        <div class="account-card skeleton-card" *ngFor="let i of [1, 2, 3]">
           <div class="avatar small skeleton"></div>
           <div class="skeleton-line skeleton-account-name"></div>
           <div class="skeleton-line skeleton-account-relation"></div>
@@ -45,7 +45,7 @@
 }
 
 @if (!isLoading() && !errorMessage() && accountInfo()) {
-  <div class="account-container">    
+  <div class="account-container">
     <!-- Modal de confirmación de eliminación -->
     @if (showDeleteModal()) {
       <div class="modal-backdrop" (click)="cancelDelete()"></div>
@@ -57,9 +57,7 @@
           <p class="modal-warning">
             Esta acción eliminará tu cuenta de forma permanente y no se puede deshacer.
           </p>
-          <p class="modal-instruction">
-            Escribe <strong>ELIMINAR</strong> para confirmar:
-          </p>
+          <p class="modal-instruction">Escribe <strong>ELIMINAR</strong> para confirmar:</p>
           <input
             type="text"
             class="modal-input"
@@ -86,7 +84,7 @@
           </button>
         </div>
       </div>
-    }    
+    }
     <!-- Perfil principal - Información de Cuenta -->
     <div class="main-account">
       <div class="avatar-wrapper">
@@ -95,7 +93,7 @@
         </div>
       </div>
       <h2 class="account-name">{{ accountInfo()?.name || 'Usuario' }}</h2>
-      <p style="text-align: center; color: var(--text-secondary); font-size: 14px;">
+      <p style="text-align: center; color: var(--text-secondary); font-size: 14px">
         {{ accountInfo()?.email }}
       </p>
     </div>
@@ -116,9 +114,9 @@
           <span class="label">Fecha de nacimiento</span>
           <span class="value">
             @if (accountInfo()?.birthDate) {
-              {{ accountInfo()?.birthDate | date: 'dd/MM/yyyy' }}
+              {{ accountInfo()?.birthDate | date: 'dd/MM/yyyy' : 'UTC' }}
             } @else {
-              <span style="color: var(--text-secondary);">Por definir</span>
+              <span style="color: var(--text-secondary)">Por definir</span>
             }
           </span>
         </div>
@@ -128,7 +126,7 @@
             @if (accountInfo()?.age) {
               {{ accountInfo()?.age }} años
             } @else {
-              <span style="color: var(--text-secondary);">Por definir</span>
+              <span style="color: var(--text-secondary)">Por definir</span>
             }
           </span>
         </div>
@@ -138,7 +136,7 @@
             @if (accountInfo()?.allergies && accountInfo()!.allergies!.length > 0) {
               {{ accountInfo()?.allergies?.join(', ') }}
             } @else {
-              <span style="color: var(--text-secondary);">Por definir</span>
+              <span style="color: var(--text-secondary)">Por definir</span>
             }
           </span>
         </div>
@@ -150,7 +148,7 @@
       <p class="section-title">FAMILIA</p>
       <div class="accounts-list">
         @for (account of familyProfiles(); track $index) {
-          <div class="account-card">
+          <div class="account-card" (click)="openProfile(account.id)">
             <div class="avatar small">
               <span>{{ getInitial(account.name) }}</span>
             </div>
@@ -159,7 +157,11 @@
           </div>
         }
         <div class="account-card">
-          <button class="avatar small add-account" routerLink="add-family" title="Añadir perfil familiar">
+          <button
+            class="avatar small add-account"
+            routerLink="add-family"
+            title="Añadir perfil familiar"
+          >
             <lucide-angular [img]="icons.plus" size="24"></lucide-angular>
           </button>
           <p>Añadir perfil</p>
@@ -170,10 +172,7 @@
     <!-- Ajustes -->
     <div class="account-section">
       <p class="section-title">AJUSTES</p>
-      <button 
-        class="btn btn-primary"
-        routerLink="edit"
-        style="margin: 20px 0;">
+      <button class="btn btn-primary" routerLink="edit" style="margin: 20px 0">
         Editar información
       </button>
       <button class="btn-theme" (click)="toggleTheme()">
@@ -189,9 +188,7 @@
 
     <div class="danger-zone">
       <p class="section-title danger-title">ZONA DE PELIGRO</p>
-      <p class="danger-description">
-        Esta accion eliminara tu cuenta de forma permanente.
-      </p>
+      <p class="danger-description">Esta accion eliminara tu cuenta de forma permanente.</p>
       <button class="btn-danger" (click)="deleteAccount()" [disabled]="isDeletingAccount()">
         {{ isDeletingAccount() ? 'Eliminando cuenta...' : 'Eliminar cuenta' }}
       </button>
@@ -199,5 +196,11 @@
         <p class="danger-error">{{ deleteErrorMessage() }}</p>
       }
     </div>
+
+    <app-profile-detail-modal
+      [open]="profileModalOpen()"
+      [profileId]="selectedProfileId()"
+      (closed)="closeProfileModal()"
+    ></app-profile-detail-modal>
   </div>
 }

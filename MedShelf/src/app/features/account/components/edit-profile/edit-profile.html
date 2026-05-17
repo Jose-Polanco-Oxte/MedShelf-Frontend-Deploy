@@ -1,0 +1,128 @@
+<div class="edit-profile-container">
+  @if (toastMessage) {
+    <div
+      [ngClass]="{
+        'toast-notification': true,
+        'toast-success': true,
+        'toast-exit': isToastExiting,
+      }"
+    >
+      <div class="toast-content">
+        <lucide-angular [img]="icons.checkCircle" size="20" class="toast-icon"></lucide-angular>
+        <div class="toast-message">
+          <p>{{ toastMessage }}</p>
+        </div>
+        <button class="toast-close" (click)="closeToast()" type="button">✕</button>
+      </div>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="error-banner">
+      <lucide-angular [img]="icons.alertCircle" size="18"></lucide-angular>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+
+  <div class="header-actions">
+    <a routerLink="/account" class="btn-back">
+      <lucide-angular [img]="icons.arrowLeft" size="24"></lucide-angular>
+    </a>
+    <h2>Editar perfil</h2>
+    <div style="width: 48px"></div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">Cargando perfil...</div>
+  } @else {
+    <form class="edit-form" (ngSubmit)="saveProfile()">
+      <div class="form-card">
+        <div class="profile-preview">
+          <div class="profile-avatar">
+            {{ profileData().name?.charAt(0)?.toUpperCase() || 'P' }}
+          </div>
+          <div>
+            <p class="profile-title">{{ profileData().name || 'Perfil' }}</p>
+            <p class="profile-subtitle">{{ profileData().relationship || 'Familiar' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="name">Nombre</label>
+        <input
+          type="text"
+          id="name"
+          [ngModel]="profileData().name"
+          (ngModelChange)="updateName($event)"
+          name="name"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="relationship">Relación</label>
+        <input
+          type="text"
+          id="relationship"
+          [ngModel]="profileData().relationship"
+          (ngModelChange)="updateRelationship($event)"
+          name="relationship"
+          placeholder="Ej. parent"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="birthDate">Fecha de nacimiento</label>
+        <input
+          type="date"
+          id="birthDate"
+          [ngModel]="profileData().birthDate"
+          name="birthDate"
+          disabled
+        />
+        <small class="field-hint"
+          >La fecha se muestra solo como referencia y no se edita desde aquí.</small
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="createdAt">Creado</label>
+        <input type="text" id="createdAt" [value]="formatDate(profileData().createdAt)" readonly />
+      </div>
+
+      <div class="form-group">
+        <label for="allergyInput">Alergias</label>
+        <div class="allergy-input-wrapper">
+          <input
+            type="text"
+            id="allergyInput"
+            [ngModel]="allergyInput()"
+            (ngModelChange)="allergyInput.set($event)"
+            name="allergyInput"
+            placeholder="Ej. Penicilina"
+          />
+          <button type="button" class="btn-add-allergy" (click)="addAllergy()">+</button>
+        </div>
+        @if (profileData().allergies.length > 0) {
+          <div class="allergies-list">
+            @for (allergy of profileData().allergies; let i = $index; track i) {
+              <span class="allergy-badge">
+                {{ allergy }}
+                <button type="button" class="btn-remove" (click)="removeAllergy(i)">✕</button>
+              </span>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-save" [disabled]="isSaving()">
+          <lucide-angular [img]="icons.save" size="20"></lucide-angular>
+          {{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+        <button type="button" class="btn-cancel" (click)="cancel()">Cancelar</button>
+      </div>
+    </form>
+  }
+</div>

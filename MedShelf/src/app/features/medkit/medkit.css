@@ -28,7 +28,6 @@ div {
   box-sizing: border-box;
 }
 
-/* ── Header ── */
 .header {
   padding: 1.25rem 1rem 0.5rem;
   padding-top: max(1.25rem, env(safe-area-inset-top));
@@ -54,7 +53,6 @@ div {
   color: var(--error-text);
 }
 
-/* Statistics Section */
 .stats-section {
   display: flex;
   gap: 1rem;
@@ -79,7 +77,7 @@ div {
 
 .stat-info {
   color: var(--text-tertiary);
-  font-size: .75rem;
+  font-size: 0.75rem;
 }
 
 .stat-icon {
@@ -104,7 +102,6 @@ div {
   margin: 0;
 }
 
-/* Barra de busqueda */
 .search-section {
   margin-bottom: 1.5rem;
 }
@@ -157,7 +154,6 @@ div {
   cursor: pointer;
   min-height: 140px;
   border: 1px solid var(--border-lighter);
-  border-left: 5px solid var(--primary-blue);
   overflow: visible;
   z-index: 1;
 }
@@ -570,12 +566,15 @@ div {
 }
 
 /* Touch-friendly spacing */
-button, a {
+button,
+a {
   -webkit-touch-callout: none;
   user-select: none;
 }
 
-input, textarea, select {
+input,
+textarea,
+select {
   font-size: 16px;
   padding: 0.75rem;
 }
@@ -597,4 +596,3 @@ main {
   padding-top: env(safe-area-inset-top);
   padding-bottom: max(100px, calc(100px + env(safe-area-inset-bottom)));
 }
-

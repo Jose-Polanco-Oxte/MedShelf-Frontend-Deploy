@@ -1,0 +1,234 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 12, 20, 0.56);
+  backdrop-filter: blur(4px);
+  z-index: 1200;
+}
+
+.profile-modal {
+  position: fixed;
+  inset: 50% auto auto 50%;
+  z-index: 1201;
+  transform: translate(-50%, -50%);
+  width: min(94vw, 960px);
+  max-height: 88vh;
+  overflow: auto;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), var(--card-bg));
+  border: 1px solid var(--border-lighter);
+  border-radius: 28px;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.28);
+  padding: 1.25rem;
+  color: var(--heading-color);
+}
+
+.modal-body {
+  display: grid;
+  gap: 1rem;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.modal-kicker {
+  margin: 0 0 0.25rem;
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.modal-close {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  color: var(--heading-color);
+  display: grid;
+  place-items: center;
+}
+
+.modal-state {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.modal-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--error-text);
+}
+
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(24, 95, 165, 0.14), rgba(48, 181, 231, 0.08));
+}
+
+.profile-avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--primary-blue);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.profile-name {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.profile-meta {
+  margin: 0.2rem 0 0;
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+}
+
+.profile-info {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.profile-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.profile-meta-card {
+  padding: 1rem;
+  border-radius: 18px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-lighter);
+}
+
+.meta-card-label {
+  margin: 0 0 0.35rem;
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.profile-meta-card strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.meta-card-hint {
+  margin: 0.5rem 0 0;
+  color: var(--text-tertiary);
+  font-size: 0.88rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 14px;
+  background: var(--bg-primary);
+}
+
+.label {
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+}
+
+.value {
+  color: var(--heading-color);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.value-wrap {
+  white-space: normal;
+}
+
+.modal-actions {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.edit-button,
+.secondary-button {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease,
+    background 0.18s ease;
+}
+
+.edit-button {
+  background: var(--primary-blue);
+  color: white;
+  border: 0;
+}
+
+.secondary-button {
+  background: transparent;
+  color: var(--heading-color);
+  border: 1px solid var(--border-lighter);
+}
+
+.edit-button:active,
+.secondary-button:active {
+  transform: scale(0.99);
+}
+
+@media (min-width: 768px) {
+  .profile-modal {
+    padding: 1.5rem;
+  }
+
+  .profile-grid {
+    grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.9fr);
+    align-items: start;
+  }
+
+  .modal-actions {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+
+  .edit-button,
+  .secondary-button {
+    width: auto;
+    padding-inline: 1.25rem;
+  }
+}
