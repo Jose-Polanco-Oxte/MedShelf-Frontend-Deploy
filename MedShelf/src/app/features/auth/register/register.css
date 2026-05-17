@@ -115,6 +115,12 @@ main {
   color: #999;
 }
 
+input[type="date"] {
+  cursor: pointer;
+  padding-right: 0.875rem;
+  width: 100%;
+}
+
 .btn-register {
   padding: 1rem;
   background: var(--brand-color);

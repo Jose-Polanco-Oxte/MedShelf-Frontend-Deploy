@@ -1,5 +1,4 @@
 <div class="add-family-container">
-  <!-- Toast Notification -->
   @if (toastMessage) {
     <div
       [ngClass]="{
@@ -23,7 +22,6 @@
     </div>
   }
 
-  <!-- Botón retorno -->
   <div class="header-actions">
     <a routerLink="/account" class="btn-back">
       <lucide-angular [img]="icons.arrowLeft" size="24"></lucide-angular>
@@ -33,24 +31,22 @@
   </div>
 
   <form class="add-family-form" (ngSubmit)="addFamilyMember()">
-    <!-- Nombre -->
     <div class="form-group">
       <label for="name">Nombre completo</label>
-      <input 
-        type="text" 
-        id="name" 
-        [(ngModel)]="familyData.name" 
+      <input
+        type="text"
+        id="name"
+        [(ngModel)]="familyData.name"
         name="name"
-        placeholder="Ej. María García" 
+        placeholder="Ej. María García"
         required />
     </div>
 
-    <!-- Relación -->
     <div class="form-group">
       <label for="relation">Relación</label>
-      <select 
-        id="relation" 
-        [(ngModel)]="familyData.relation" 
+      <select
+        id="relation"
+        [(ngModel)]="familyData.relation"
         name="relation"
         class="select-input"
         required>
@@ -61,25 +57,26 @@
       </select>
     </div>
 
-    <!-- Fecha de nacimiento -->
-    <div class="form-group">
+    <!-- Fecha con fix de picker -->
+    <div class="form-group" (click)="openDatePicker()">
       <label for="birthDate">Fecha de nacimiento</label>
-      <input 
-        type="date" 
-        id="birthDate" 
-        [(ngModel)]="familyData.birthDate" 
+      <input
+        #birthDateInput
+        type="date"
+        id="birthDate"
+        [(ngModel)]="familyData.birthDate"
+        [max]="maxBirthDate"
         name="birthDate"
         required />
     </div>
 
-    <!-- Alergias -->
     <div class="form-group">
       <label for="allergyInput">Alergias</label>
       <div class="allergy-input-wrapper">
-        <input 
-          type="text" 
-          id="allergyInput" 
-          [(ngModel)]="allergyInput" 
+        <input
+          type="text"
+          id="allergyInput"
+          [(ngModel)]="allergyInput"
           name="allergyInput"
           placeholder="Ej. Penicilina" />
         <button type="button" class="btn-add-allergy" (click)="addAllergy()">+</button>
@@ -96,7 +93,6 @@
       }
     </div>
 
-    <!-- Botones -->
     <div class="form-actions">
       <button type="submit" class="btn-save" [disabled]="isLoading">
         @if (isLoading) {
