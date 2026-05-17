@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -23,6 +23,8 @@ export class AddFamily {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
+  @ViewChild('birthDateInput') birthDateInput!: ElementRef<HTMLInputElement>;
+
   icons = { arrowLeft: ArrowLeft, save: Save, loader: Loader, checkCircle: CheckCircle, warning: TriangleAlert };
 
   familyData: FamilyMember = {
@@ -39,6 +41,15 @@ export class AddFamily {
   isToastExiting = false;
   isErrorToast = false;
   private toastTimeoutId: any;
+
+  // Sin límite de 18 años: la familia puede incluir menores
+  get maxBirthDate(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  openDatePicker() {
+    this.birthDateInput?.nativeElement?.showPicker();
+  }
 
   addAllergy() {
     if (this.allergyInput.trim() && !this.familyData.allergies.includes(this.allergyInput.trim())) {
@@ -65,7 +76,7 @@ export class AddFamily {
     }).subscribe({
       next: () => {
         this.isLoading = false;
-        this.showSuccess(`Miembro de familia agregado exitosamente`);
+        this.showSuccess('Miembro de familia agregado exitosamente');
         setTimeout(() => this.router.navigate(['/account']), 1500);
       },
       error: (error) => {
