@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Save } from 'lucide-angular';
 import { ApiService } from '../../../../shared/services/api.service';
 
 @Component({
@@ -15,7 +15,7 @@ export class AddLocation implements OnInit {
   private router = inject(Router);
   private apiService = inject(ApiService);
 
-  icons = { arrowLeft: ArrowLeft };
+  icons = { arrowLeft: ArrowLeft, save: Save };
 
   locationData = {
     name: '',

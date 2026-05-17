@@ -1,10 +1,11 @@
 <form class="form" (ngSubmit)="saveMedicine()">
-  <div class="fab-return">
-    <a routerLink="/medkit" title="Volver">
+  <div class="header-actions">
+    <a routerLink="/medkit" class="btn-back" title="Volver">
       <lucide-angular [img]="icons.arrowLeft" size="24" class="fab-icon"></lucide-angular>
     </a>
+    <h2>Agregar medicamento</h2>
+    <div style="width: 48px;"></div>
   </div>
-  <h2>Agregar medicamento</h2>
 
   @if (errorMessage) {
     <div class="form-error">
@@ -94,7 +95,8 @@
   </div>
 
   <button type="submit" class="submit-btn" [disabled]="isLoading">
-    <lucide-angular [img]="icons.check" size="20" class="btn-icon"></lucide-angular>
+    <lucide-angular [img]="icons.save" size="20"></lucide-angular>
     {{ isLoading ? 'Guardando...' : 'Guardar Medicamento' }}
   </button>
+  
 </form>

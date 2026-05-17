@@ -9,7 +9,7 @@
     <div class="stat-card">
       <div class="stat-content">
         <p class="stat-label">Vigentes</p>
-        <div class="stat-icon stat-card">
+        <div class="stat-icon">
           <lucide-angular [img]="icons.thumbsUp" size="40" class="thumbs-up"></lucide-angular>
           <p class="stat-value thumbs-up">{{ valid() }}</p>
         </div>
@@ -20,7 +20,7 @@
     <div class="stat-card">      
       <div class="stat-content">
         <p class="stat-label">Próximos a vencer</p>
-        <div class="stat-icon stat-card">
+        <div class="stat-icon">
           <lucide-angular [img]="icons.clock" size="40" class="clock"></lucide-angular>
           <p class="stat-value clock">{{ expiringNext() }}</p>
         </div>
@@ -31,7 +31,7 @@
     <div class="stat-card">
       <div class="stat-content">
         <p class="stat-label">Caducados</p>
-        <div class="stat-icon stat-card">
+        <div class="stat-icon">
           <lucide-angular [img]="icons.alert" size="40" class="alert"></lucide-angular>
           <p class="stat-value alert">{{ expired() }}</p>
         </div>

@@ -26,15 +26,20 @@
 }
 
 .btn-back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  color: var(--primary-blue);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--primary-contrast);
-  width: 48px;
-  height: 48px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.btn-back:hover {
+  background-color: var(--bg-secondary);
 }
 
 .edit-form {

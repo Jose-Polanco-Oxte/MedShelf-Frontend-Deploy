@@ -5,10 +5,17 @@
 
 .header-actions {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  justify-content: space-between;
   gap: 1rem;
+}
+
+.header-actions h2 {
+  flex: 1;
+  text-align: center;
+  color: var(--primary-contrast);
+  font-size: 1.5rem;
+  margin: 0;
 }
 
 .btn-back {
@@ -27,15 +34,6 @@
 .btn-back:hover {
   background-color: var(--bg-secondary);
 }
-
-.header-actions h2 {
-  flex: 1;
-  text-align: center;
-  margin: 0;
-  color: var(--heading-color);
-  font-size: 1.25rem;
-}
-
 .add-family-form {
   display: flex;
   flex-direction: column;
