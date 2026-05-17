@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, inject, HostListener } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { LucideAngularModule, ArrowLeft, Check, ChevronDown, X } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Check, ChevronDown, X, Save } from 'lucide-angular';
 import { ProductsService, type ProductResponse } from '../../../../core/services/products.service';
 import { PlacesService, type PlaceResponse } from '../../../../core/services/places.service';
 import { ItemsService, AddItemToPlaceRequest } from '../../../../core/services/items.service';
@@ -35,7 +35,7 @@ export class AddMedicineForm implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private readonly searchInput$ = new Subject<string>();
 
-  icons = { arrowLeft: ArrowLeft, check: Check, chevronDown: ChevronDown, x: X };
+  icons = { arrowLeft: ArrowLeft, check: Check, chevronDown: ChevronDown, x: X, save: Save };
 
   places: PlaceOption[] = [];
 
