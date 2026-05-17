@@ -29,10 +29,11 @@
           </div>
           <div class="card-body">
             <h3 class="card-name">
-              {{ treatment.item?.product?.name ?? treatment.item?.id ?? '—' }}
+              {{ treatment.product?.name ? treatment.product.name : '—' }}
             </h3>
             <p class="card-meta">
-              {{ treatment.dose ?? '—' }} dosis · Cada {{ treatment.frequencyHours ?? '—' }} h
+              {{ treatment.dose ? treatment.dose : '—' }} dosis · Cada
+              {{ treatment.frequencyHours ? treatment.frequencyHours : '—' }} h
               @if (treatment.days) {
                 · {{ treatment.days }} días
               }
@@ -59,41 +60,35 @@
         @if (expandedId() === treatment.id) {
           <div class="card-detail" (click)="$event.stopPropagation()">
             @if (itemDetails()[treatment.id]; as item) {
-              <div class="detail-row">
-                <span class="detail-label">Ubicación</span>
-                <span class="detail-value">{{ item.place?.name ?? '—' }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Disponible</span>
-                <span class="detail-value">
-                  {{ item.availableContent ?? '—' }} {{ item.product?.netContent?.unit ?? '' }}
-                </span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Forma farmacéutica</span>
-                <span class="detail-value">
-                  {{ item.product?.pharmaceuticalForm?.name ?? '—' }}
-                </span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Vencimiento</span>
-                <span class="detail-value">{{ item.expirationDate | date: 'dd/MM/yyyy' }}</span>
-              </div>
+              @for (medItem of item; track medItem.id) {
+                <div class="detail-item-card">
+                  <div class="detail-row">
+                    <span class="detail-label">Ubicación</span>
+                    <span class="detail-value">{{ medItem.place?.name ?? '—' }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Disponible</span>
+                    <span class="detail-value">{{ medItem.availableContent ?? '—' }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Vencimiento</span>
+                    <span class="detail-value">{{
+                      medItem.expirationDate | date: 'dd/MM/yyyy'
+                    }}</span>
+                  </div>
+                  <div class="detail-actions">
+                    <button
+                      class="detail-btn detail-btn-primary"
+                      (click)="registerConsumption(medItem.id, treatment.dose)"
+                    >
+                      Tomar {{ treatment.dose }} dosis
+                    </button>
+                  </div>
+                </div>
+              }
             } @else {
               <p class="detail-loading">Cargando detalles...</p>
             }
-
-            <div class="detail-actions">
-              <a [routerLink]="[treatment.item.id, 'consumptions']" class="detail-btn">
-                Ver tomas
-              </a>
-              <button
-                class="detail-btn detail-btn-primary"
-                (click)="registerConsumption(treatment.item.id, treatment.dose)"
-              >
-                Tomar {{ treatment.dose ?? '' }} dosis
-              </button>
-            </div>
           </div>
         }
       </div>

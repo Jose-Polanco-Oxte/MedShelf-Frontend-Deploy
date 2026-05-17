@@ -1,13 +1,20 @@
-import { Component, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, ArrowLeft, Save, Loader, CheckCircle, TriangleAlert } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  ArrowLeft,
+  Save,
+  Loader,
+  CheckCircle,
+  TriangleAlert,
+} from 'lucide-angular';
 import { ProfilesService } from '../../../../core/services/profiles.service';
 
 interface FamilyMember {
   name: string;
-  relation: string;
+  relationship: string;
   birthDate: string;
   allergies: string[];
 }
@@ -23,11 +30,19 @@ export class AddFamily {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
-  icons = { arrowLeft: ArrowLeft, save: Save, loader: Loader, checkCircle: CheckCircle, warning: TriangleAlert };
+  @ViewChild('birthDateInput') birthDateInput!: ElementRef<HTMLInputElement>;
+
+  icons = {
+    arrowLeft: ArrowLeft,
+    save: Save,
+    loader: Loader,
+    checkCircle: CheckCircle,
+    warning: TriangleAlert,
+  };
 
   familyData: FamilyMember = {
     name: '',
-    relation: '',
+    relationship: '',
     birthDate: '',
     allergies: [],
   };
@@ -39,6 +54,15 @@ export class AddFamily {
   isToastExiting = false;
   isErrorToast = false;
   private toastTimeoutId: any;
+
+  // Sin límite de 18 años: la familia puede incluir menores
+  get maxBirthDate(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  openDatePicker() {
+    this.birthDateInput?.nativeElement?.showPicker();
+  }
 
   addAllergy() {
     if (this.allergyInput.trim() && !this.familyData.allergies.includes(this.allergyInput.trim())) {
@@ -52,29 +76,36 @@ export class AddFamily {
   }
 
   addFamilyMember() {
-    if (!this.familyData.name.trim() || !this.familyData.relation || !this.familyData.birthDate) {
+    if (
+      !this.familyData.name.trim() ||
+      !this.familyData.relationship ||
+      !this.familyData.birthDate
+    ) {
       this.showError('Por favor completa al menos el nombre, la relación y la fecha de nacimiento');
       return;
     }
 
     this.isLoading = true;
-    this.profilesService.createProfile({
-      name: this.familyData.name,
-      birthDate: this.familyData.birthDate,
-      allergies: this.familyData.allergies,
-    }).subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.showSuccess(`Miembro de familia agregado exitosamente`);
-        setTimeout(() => this.router.navigate(['/account']), 1500);
-      },
-      error: (error) => {
-        this.isLoading = false;
-        console.error('Error al agregar miembro:', error);
-        const errorMsg = error.error?.message || error.message || 'Error desconocido';
-        this.showError(`Error al agregar el miembro de familia: ${errorMsg}`);
-      },
-    });
+    this.profilesService
+      .createProfile({
+        name: this.familyData.name,
+        relationship: this.familyData.relationship,
+        birthDate: this.familyData.birthDate,
+        allergies: this.familyData.allergies,
+      })
+      .subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.showSuccess('Miembro de familia agregado exitosamente');
+          setTimeout(() => this.router.navigate(['/account']), 1500);
+        },
+        error: (error) => {
+          this.isLoading = false;
+          console.error('Error al agregar miembro:', error);
+          const errorMsg = error.error?.message || error.message || 'Error desconocido';
+          this.showError(`Error al agregar el miembro de familia: ${errorMsg}`);
+        },
+      });
   }
 
   cancel() {

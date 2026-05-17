@@ -25,7 +25,7 @@
   }
 
   <div class="header-actions">
-    <a routerLink="/account" class="btn-back">
+    <a [routerLink]="returnUrl" class="btn-back">
       <lucide-angular [img]="icons.arrowLeft" size="24"></lucide-angular>
     </a>
     <h2>Editar perfil</h2>
@@ -62,14 +62,19 @@
 
       <div class="form-group">
         <label for="relationship">Relación</label>
-        <input
-          type="text"
+        <select
           id="relationship"
           [ngModel]="profileData().relationship"
           (ngModelChange)="updateRelationship($event)"
           name="relationship"
-          placeholder="Ej. parent"
-        />
+          class="select-input"
+          required
+        >
+          <option value="">Selecciona una relación</option>
+          @for (rel of relations; track rel) {
+            <option [value]="rel">{{ rel }}</option>
+          }
+        </select>
       </div>
 
       <div class="form-group">
@@ -121,7 +126,6 @@
           <lucide-angular [img]="icons.save" size="20"></lucide-angular>
           {{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}
         </button>
-        <button type="button" class="btn-cancel" (click)="cancel()">Cancelar</button>
       </div>
     </form>
   }

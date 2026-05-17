@@ -44,6 +44,7 @@ export class EditProfile implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   profileId = '';
+  returnUrl = '/account';
   profileData = signal<ProfileFormData>({
     name: '',
     relationship: '',
@@ -55,12 +56,14 @@ export class EditProfile implements OnInit {
   isLoading = signal(true);
   isSaving = signal(false);
   errorMessage = signal('');
+  relations = ['Madre', 'Padre', 'Hijo/a', 'Hermano/a', 'Abuelo/a', 'Tío/a', 'Otro'];
   toastMessage = '';
   isToastExiting = false;
   private toastTimeoutId: any;
 
   ngOnInit() {
     this.profileId = this.route.snapshot.paramMap.get('profileId') || '';
+    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/account';
 
     if (!this.profileId) {
       this.isLoading.set(false);
@@ -135,7 +138,7 @@ export class EditProfile implements OnInit {
         this.isSaving.set(false);
         this.profileData.set(this.toFormData(updatedProfile));
         this.showSuccess('Perfil actualizado correctamente');
-        setTimeout(() => this.router.navigate(['/account']), 1200);
+        setTimeout(() => this.router.navigateByUrl(this.returnUrl), 1200);
       },
       error: (error) => {
         this.isSaving.set(false);
@@ -147,7 +150,7 @@ export class EditProfile implements OnInit {
   }
 
   cancel() {
-    this.router.navigate(['/account']);
+    this.router.navigateByUrl(this.returnUrl);
   }
 
   formatDate(value?: string) {

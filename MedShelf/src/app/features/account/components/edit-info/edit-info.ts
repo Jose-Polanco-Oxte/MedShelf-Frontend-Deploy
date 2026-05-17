@@ -1,4 +1,13 @@
-import { Component, OnInit, signal, ChangeDetectorRef, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  signal,
+  ChangeDetectorRef,
+  inject,
+  ViewChild,
+  ElementRef,
+  computed,
+} from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,6 +35,8 @@ export class EditInfo implements OnInit {
   private apiService = inject(ApiService);
   private cdr = inject(ChangeDetectorRef);
 
+  @ViewChild('birthDateInput') birthDateInput!: ElementRef<HTMLInputElement>;
+
   profileData = signal<ProfileData>({
     name: '',
     email: '',
@@ -39,12 +50,30 @@ export class EditInfo implements OnInit {
   isToastExiting = false;
   private toastTimeoutId: any;
 
+  maxBirthDate = computed(() => {
+    const today = new Date();
+    today.setFullYear(today.getFullYear() - 18);
+    return today.toISOString().split('T')[0];
+  });
+
+  openDatePicker() {
+    this.birthDateInput?.nativeElement?.showPicker();
+  }
+
+  // Normaliza cualquier formato de fecha a YYYY-MM-DD para el input
+  normalizeDateForInput(date: string | null | undefined): string {
+    if (!date) return '';
+    if (date.includes('T')) {
+      return date.split('T')[0];
+    }
+    return date;
+  }
+
   ngOnInit() {
     this.loadProfile();
   }
 
   loadProfile() {
-    // Obtener datos de la cuenta (nombre y email) desde /auth/account
     this.apiService.get<any>('/auth/account').subscribe({
       next: (authData) => {
         console.log('Datos de auth/account:', authData);
@@ -57,7 +86,7 @@ export class EditInfo implements OnInit {
             console.log('Perfiles array:', profiles);
 
             if (profiles && profiles.length > 0) {
-              const userProfile = profiles[0]; // El primer perfil es del usuario
+              const userProfile = profiles[0];
               console.log('Primer perfil (usuario):', userProfile);
               console.log('Alergias del perfil:', userProfile.allergies);
 
@@ -68,12 +97,12 @@ export class EditInfo implements OnInit {
                 profileId: userProfile.id || '',
                 name: authData.name || '',
                 email: authData.email || '',
-                birthDate,
+                birthDate: this.normalizeDateForInput(userProfile.birthDate),
                 allergies: userProfile.allergies || [],
               });
-              console.log('Perfil cargado en el componente:', this.profileData());
+
+              console.log('Perfil cargado:', this.profileData());
             } else {
-              // Si no hay perfil, solo usar datos de auth/account
               console.warn('No hay perfiles disponibles');
               this.profileData.set({
                 id: authData.id || '',
@@ -86,7 +115,6 @@ export class EditInfo implements OnInit {
           },
           error: (error) => {
             console.error('Error al cargar profiles:', error);
-            // Aunque falle profiles, mostrar al menos los datos de auth/account
             this.profileData.set({
               id: authData.id || '',
               name: authData.name || '',
@@ -104,28 +132,22 @@ export class EditInfo implements OnInit {
   }
 
   updateName(value: string) {
-    const current = this.profileData();
-    this.profileData.set({ ...current, name: value });
+    this.profileData.set({ ...this.profileData(), name: value });
   }
 
   updateEmail(value: string) {
-    const current = this.profileData();
-    this.profileData.set({ ...current, email: value });
+    this.profileData.set({ ...this.profileData(), email: value });
   }
 
   updateBirthDate(value: string) {
-    const current = this.profileData();
-    this.profileData.set({ ...current, birthDate: value });
+    this.profileData.set({ ...this.profileData(), birthDate: value });
   }
 
   addAllergy() {
     const trimmed = this.allergyInput().trim();
     if (trimmed && !this.profileData().allergies.includes(trimmed)) {
       const current = this.profileData();
-      this.profileData.set({
-        ...current,
-        allergies: [...current.allergies, trimmed],
-      });
+      this.profileData.set({ ...current, allergies: [...current.allergies, trimmed] });
       this.allergyInput.set('');
     }
   }
@@ -195,18 +217,14 @@ export class EditInfo implements OnInit {
           },
           error: (error) => {
             this.isLoading.set(false);
-            console.error(`Error al ${profileAction} perfil:`, error);
             const errorMsg = error.error?.message || error.message || 'Error desconocido';
-            console.error('Detalle del error:', error.error);
             this.showError(`Error al ${profileAction} el perfil: ${errorMsg}`);
           },
         });
       },
       error: (error) => {
         this.isLoading.set(false);
-        console.error('Error al actualizar datos de cuenta:', error);
         const errorMsg = error.error?.message || error.message || 'Error desconocido';
-        console.error('Detalle del error:', error.error);
         this.showError(`Error al actualizar datos de cuenta: ${errorMsg}`);
       },
     });

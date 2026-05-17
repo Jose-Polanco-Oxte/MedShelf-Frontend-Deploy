@@ -9,7 +9,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { LucideAngularModule, X, AlertCircle, Pencil } from 'lucide-angular';
 import { ProfilesService, type Profile } from '../../../core/services/profiles.service';
 
@@ -21,6 +21,7 @@ import { ProfilesService, type Profile } from '../../../core/services/profiles.s
 })
 export class ProfileDetailModal implements OnChanges {
   private profilesService = inject(ProfilesService);
+  private router = inject(Router);
 
   @Input() open = false;
   @Input() profileId: string | null = null;
@@ -29,8 +30,14 @@ export class ProfileDetailModal implements OnChanges {
   profile = signal<Profile | null>(null);
   loading = signal(false);
   error = signal('');
+  deleting = signal(false);
+  deleteError = signal('');
 
   icons = { close: X, alertCircle: AlertCircle, edit: Pencil };
+
+  get currentUrl() {
+    return this.router.url;
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if ((changes['open'] || changes['profileId']) && this.open && this.profileId) {
@@ -78,6 +85,18 @@ export class ProfileDetailModal implements OnChanges {
     }).format(date);
   }
 
+  formatDateOnly(value?: string) {
+    const date = this.toUtcDate(value);
+    if (!date) return 'Por definir';
+
+    return new Intl.DateTimeFormat('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(date);
+  }
+
   private loadProfile() {
     if (!this.profileId) return;
 
@@ -119,5 +138,29 @@ export class ProfileDetailModal implements OnChanges {
     const date = new Date(normalized);
 
     return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  deleteProfile() {
+    const id = this.profileId || this.profile()?.id;
+    if (!id) return;
+
+    const ok = confirm(
+      '¿Estás seguro que quieres eliminar este perfil? Esta acción no se puede deshacer.',
+    );
+    if (!ok) return;
+
+    this.deleting.set(true);
+    this.deleteError.set('');
+
+    this.profilesService.deleteProfile(id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.close();
+      },
+      error: () => {
+        this.deleting.set(false);
+        this.deleteError.set('No se pudo eliminar el perfil');
+      },
+    });
   }
 }

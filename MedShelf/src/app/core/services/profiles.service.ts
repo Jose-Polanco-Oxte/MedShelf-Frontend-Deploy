@@ -11,6 +11,7 @@ interface ListProfilesParams {
 
 interface CreateProfileRequest {
   name: string;
+  relationship: string;
   birthDate: string;
   allergies?: string[];
 }
@@ -72,5 +73,16 @@ export class ProfilesService {
     return this.api
       .post<Profile>('/profiles', data)
       .pipe(tap((profile) => this._profiles.update((prev) => [profile, ...prev])));
+  }
+
+  deleteProfile(profileId: string) {
+    return this.api.delete<void>(`/profiles/${profileId}`).pipe(
+      tap(() => {
+        this._profiles.update((prev) => prev.filter((p) => p.id !== profileId));
+        if (this._selectedProfile()?.id === profileId) {
+          this._selectedProfile.set(null);
+        }
+      }),
+    );
   }
 }

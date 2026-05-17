@@ -8,6 +8,7 @@ interface ListItemsParams {
   cursor?: string;
   size?: number;
   'filter[name]'?: string;
+  'filter[productId]'?: string;
 }
 
 export interface AddItemToPlaceRequest {
@@ -98,6 +99,14 @@ export class ItemsService {
     return this.api.delete(`/items/${itemId}`).pipe(
       tap(() => {
         this.getItemsByHouse().subscribe();
+      }),
+    );
+  }
+
+  getItemsInMedkit(medkitId: string, params?: ListItemsParams) {
+    return this.api.get<ItemsListResponse>(`/items`, params ? { params } : undefined).pipe(
+      tap((response) => {
+        this._items.set(response);
       }),
     );
   }

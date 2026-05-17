@@ -4,7 +4,6 @@
     <header class="modal-header">
       <div>
         <p class="modal-kicker">Detalle del perfil</p>
-        <h3>{{ profile()?.name || 'Perfil' }}</h3>
       </div>
       <button class="modal-close" type="button" (click)="close()">
         <lucide-angular [img]="icons.close" size="18"></lucide-angular>
@@ -56,19 +55,37 @@
 
           <div class="profile-meta-card">
             <p class="meta-card-label">Creado</p>
-            <strong>{{ formatDateTime(profile()?.createdAt) }}</strong>
-            <p class="meta-card-hint">Este perfil se sincroniza desde la API.</p>
+            <strong>{{ formatDateOnly(profile()?.createdAt) }}</strong>
           </div>
         </div>
 
         <div class="modal-actions">
           @if (getProfileRoute()) {
-            <a class="edit-button" [routerLink]="getProfileRoute()!" (click)="close()">
+            <a
+              class="edit-button"
+              [routerLink]="getProfileRoute()!"
+              [queryParams]="{ returnUrl: currentUrl }"
+              (click)="close()"
+            >
               <lucide-angular [img]="icons.edit" size="18"></lucide-angular>
               Editar perfil
             </a>
           }
-          <button class="secondary-button" type="button" (click)="close()">Cerrar</button>
+          <button
+            class="delete-button"
+            type="button"
+            (click)="deleteProfile()"
+            [disabled]="deleting()"
+          >
+            @if (deleting()) {
+              Eliminando...
+            } @else {
+              Eliminar perfil
+            }
+          </button>
+          @if (deleteError()) {
+            <div class="modal-error small">{{ deleteError() }}</div>
+          }
         </div>
       }
     </div>

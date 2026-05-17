@@ -1,8 +1,8 @@
 <div class="add-ubication-container">
   <div class="header-actions">
-    <button class="btn-back" (click)="cancel()" title="Volver">
+    <a class="btn-back" (click)="cancel()" title="Volver">
       <lucide-angular [img]="icons.arrowLeft" size="24"></lucide-angular>
-    </button>
+    </a>
     <h2>Agregar Ubicación</h2>
     <div></div>
   </div>
@@ -35,10 +35,8 @@
 
     <div class="form-actions">
       <button type="button" class="btn-save" (click)="addLocation()" [disabled]="isLoading || !houseId">
+        <lucide-angular [img]="icons.save" size="24"></lucide-angular>
         {{ isLoading ? 'Guardando...' : 'Guardar Ubicación' }}
-      </button>
-      <button type="button" class="btn-cancel" (click)="cancel()" [disabled]="isLoading">
-        Cancelar
       </button>
     </div>
   </form>

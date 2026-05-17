@@ -2,7 +2,7 @@
   <div class="modal-backdrop" (click)="close()"></div>
   <section class="place-modal" role="dialog" aria-modal="true">
     <header class="modal-header">
-      <div>
+      <div class="modal-heading-group">
         <p class="modal-kicker">Items del lugar</p>
         <h3>{{ placeName || 'Lugar' }}</h3>
       </div>
@@ -11,35 +11,60 @@
       </button>
     </header>
 
-    @if (loading()) {
-      <div class="modal-state">Cargando items...</div>
-    } @else if (error()) {
-      <div class="modal-state modal-error">
-        <lucide-angular [img]="icons.alertCircle" size="18"></lucide-angular>
-        <span>{{ error() }}</span>
-      </div>
-    } @else if (items().length > 0) {
-      <div class="medications-list">
-        @for (item of items(); track item.id) {
-          <article class="medication-card">
-            <div class="med-header">
-              <div class="med-title-section">
-                <h3>{{ item.product.name || 'Producto' }}</h3>
-                <span class="med-status">{{ item.place.name || placeName || 'Lugar' }}</span>
-              </div>
-            </div>
-
-            <div class="med-details">
-              <div class="med-info">
-                <p><strong>Contenido total:</strong> {{ item.availableContent }}</p>
-                <p><strong>Vencimiento:</strong> {{ item.expirationDate | date: 'dd/MM/yyyy' }}</p>
-              </div>
-            </div>
-          </article>
+    <div class="modal-search">
+      <label class="search-field" for="place-item-search">
+        <lucide-angular [img]="icons.search" size="16"></lucide-angular>
+        <input
+          id="place-item-search"
+          type="text"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="onSearchChange($event)"
+          name="placeItemSearch"
+          placeholder="Buscar medicamento"
+        />
+        @if (searchTerm()) {
+          <button type="button" class="search-clear" (click)="clearSearch()">✕</button>
         }
-      </div>
-    } @else {
-      <div class="modal-state">Este lugar no tiene items registrados.</div>
-    }
+      </label>
+    </div>
+
+    <div class="modal-body">
+      @if (loading()) {
+        <div class="modal-state">Cargando items...</div>
+      } @else if (error()) {
+        <div class="modal-state modal-error">
+          <lucide-angular [img]="icons.alertCircle" size="18"></lucide-angular>
+          <span>{{ error() }}</span>
+        </div>
+      } @else if (items().length > 0) {
+        <div class="medications-list">
+          @for (item of items(); track item.id) {
+            <article class="medication-card">
+              <div class="med-header">
+                <div class="med-icon">
+                  <lucide-angular [img]="icons.pill" size="18"></lucide-angular>
+                </div>
+                <div class="med-title-section">
+                  <h3>{{ item.product.name || 'Producto' }}</h3>
+                  <span class="med-status">{{ item.place.name || placeName || 'Lugar' }}</span>
+                </div>
+              </div>
+
+              <div class="med-details">
+                <div class="med-info">
+                  <p>
+                    <lucide-angular [img]="icons.clock" size="15"></lucide-angular>
+                    <strong>Vencimiento:</strong> {{ formatDate(item.expirationDate) }}
+                  </p>
+                  <p><strong>Contenido disponible:</strong> {{ item.availableContent }}</p>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="modal-state">Este lugar no tiene items registrados.</div>
+      }
+    </div>
   </section>
 }

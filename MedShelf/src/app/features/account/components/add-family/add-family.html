@@ -1,12 +1,11 @@
 <div class="add-family-container">
-  <!-- Toast Notification -->
   @if (toastMessage) {
     <div
       [ngClass]="{
         'toast-notification': true,
         'toast-success': !isErrorToast,
         'toast-error': isErrorToast,
-        'toast-exit': isToastExiting
+        'toast-exit': isToastExiting,
       }"
     >
       <div class="toast-content">
@@ -23,37 +22,36 @@
     </div>
   }
 
-  <!-- Botón retorno -->
   <div class="header-actions">
     <a routerLink="/account" class="btn-back">
       <lucide-angular [img]="icons.arrowLeft" size="24"></lucide-angular>
     </a>
     <h2>Agregar Familia</h2>
-    <div style="width: 48px;"></div>
+    <div style="width: 48px"></div>
   </div>
 
   <form class="add-family-form" (ngSubmit)="addFamilyMember()">
-    <!-- Nombre -->
     <div class="form-group">
       <label for="name">Nombre completo</label>
-      <input 
-        type="text" 
-        id="name" 
-        [(ngModel)]="familyData.name" 
+      <input
+        type="text"
+        id="name"
+        [(ngModel)]="familyData.name"
         name="name"
-        placeholder="Ej. María García" 
-        required />
+        placeholder="Ej. María García"
+        required
+      />
     </div>
 
-    <!-- Relación -->
     <div class="form-group">
       <label for="relation">Relación</label>
-      <select 
-        id="relation" 
-        [(ngModel)]="familyData.relation" 
+      <select
+        id="relation"
+        [(ngModel)]="familyData.relationship"
         name="relation"
         class="select-input"
-        required>
+        required
+      >
         <option value="">Selecciona una relación</option>
         @for (rel of relations; track rel) {
           <option [value]="rel">{{ rel }}</option>
@@ -61,27 +59,30 @@
       </select>
     </div>
 
-    <!-- Fecha de nacimiento -->
-    <div class="form-group">
+    <!-- Fecha con fix de picker -->
+    <div class="form-group" (click)="openDatePicker()">
       <label for="birthDate">Fecha de nacimiento</label>
-      <input 
-        type="date" 
-        id="birthDate" 
-        [(ngModel)]="familyData.birthDate" 
+      <input
+        #birthDateInput
+        type="date"
+        id="birthDate"
+        [(ngModel)]="familyData.birthDate"
+        [max]="maxBirthDate"
         name="birthDate"
-        required />
+        required
+      />
     </div>
 
-    <!-- Alergias -->
     <div class="form-group">
       <label for="allergyInput">Alergias</label>
       <div class="allergy-input-wrapper">
-        <input 
-          type="text" 
-          id="allergyInput" 
-          [(ngModel)]="allergyInput" 
+        <input
+          type="text"
+          id="allergyInput"
+          [(ngModel)]="allergyInput"
           name="allergyInput"
-          placeholder="Ej. Penicilina" />
+          placeholder="Ej. Penicilina"
+        />
         <button type="button" class="btn-add-allergy" (click)="addAllergy()">+</button>
       </div>
       @if (familyData.allergies.length > 0) {
@@ -96,7 +97,6 @@
       }
     </div>
 
-    <!-- Botones -->
     <div class="form-actions">
       <button type="submit" class="btn-save" [disabled]="isLoading">
         @if (isLoading) {

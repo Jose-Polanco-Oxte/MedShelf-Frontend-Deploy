@@ -217,15 +217,31 @@
 
 .accounts-list {
   display: flex;
+  flex-wrap: nowrap;
   gap: 1.25rem;
-  overflow-x: auto;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  width: 100%;
+  max-width: 100%;
   padding-bottom: 0.5rem;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  -ms-overflow-style: auto;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
 }
 
 .accounts-list::-webkit-scrollbar {
-  display: none;
+  height: 8px;
+}
+
+.accounts-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.accounts-list::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 999px;
 }
 
 .account-card {
@@ -235,6 +251,7 @@
   gap: 0.5rem;
   flex-shrink: 0;
   cursor: pointer;
+  min-width: 108px;
 }
 
 .account-card p {

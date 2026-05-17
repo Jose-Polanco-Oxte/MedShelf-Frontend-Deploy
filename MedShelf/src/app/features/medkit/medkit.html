@@ -9,7 +9,7 @@
     <div class="stat-card">
       <div class="stat-content">
         <p class="stat-label">Vigentes</p>
-        <div class="stat-icon stat-card">
+        <div class="stat-icon">
           <lucide-angular [img]="icons.thumbsUp" size="40" class="thumbs-up"></lucide-angular>
           <p class="stat-value thumbs-up">{{ valid() }}</p>
         </div>
@@ -17,10 +17,10 @@
       </div>
     </div>
 
-    <div class="stat-card">      
+    <div class="stat-card">
       <div class="stat-content">
         <p class="stat-label">Próximos a vencer</p>
-        <div class="stat-icon stat-card">
+        <div class="stat-icon">
           <lucide-angular [img]="icons.clock" size="40" class="clock"></lucide-angular>
           <p class="stat-value clock">{{ expiringNext() }}</p>
         </div>
@@ -31,7 +31,7 @@
     <div class="stat-card">
       <div class="stat-content">
         <p class="stat-label">Caducados</p>
-        <div class="stat-icon stat-card">
+        <div class="stat-icon">
           <lucide-angular [img]="icons.alert" size="40" class="alert"></lucide-angular>
           <p class="stat-value alert">{{ expired() }}</p>
         </div>
@@ -58,11 +58,11 @@
     @if (selectedMedicinesCount() > 0) {
       <div class="selection-bar">
         <div class="selection-info">
-          <span
-            >{{ selectedMedicinesCount() }}
+          <span>
+            {{ selectedMedicinesCount() }}
             {{ selectedMedicinesCount() === 1 ? 'medicamento' : 'medicamentos' }}
-            seleccionado(s)</span
-          >
+            seleccionado(s)
+          </span>
         </div>
         <div class="selection-actions">
           <button class="btn-clear-selection" (click)="clearSelection()">Deseleccionar</button>
@@ -72,6 +72,7 @@
         </div>
       </div>
     }
+
     <div class="medications-list">
       @for (med of filteredMedicines(); track med.id) {
         <div
@@ -84,16 +85,17 @@
           <div class="med-header">
             @if (isMedicineSelected(med.id)) {
               <div class="med-checkbox">
-                <lucide-angular
-                  [img]="icons.checkSquare"
-                  size="20"
-                  class="checkbox-icon"
-                ></lucide-angular>
+                <lucide-angular [img]="icons.checkSquare" size="20" class="checkbox-icon"></lucide-angular>
               </div>
             }
+
             <div class="med-title-section">
               <h3>{{ med.name }}</h3>
-              <span class="med-status">{{ med.status }}</span>
+              <span class="med-status">
+                @if (med.status === 'valid') { Vigente }
+                @else if (med.status === 'expiringNext') { Próximo a vencer }
+                @else { Caducado }
+              </span>
             </div>
 
             <!-- Menú Hamburguesa -->
@@ -114,15 +116,6 @@
                   <lucide-angular [img]="icons.checkSquare" size="20"></lucide-angular>
                   <span>{{ isMedicineSelected(med.id) ? 'Deseleccionar' : 'Seleccionar' }}</span>
                 </button>
-
-                <!-- Decisión de Negocio: No se implementó el botón Editar -->
-                <!-- <button
-                  class="med-dropdown-item"
-                  (click)="editMedicine(med.id); $event.stopPropagation()"
-                >
-                  <lucide-angular [img]="icons.pencil" size="20"></lucide-angular>
-                  <span>Editar</span>
-                </button> -->
                 <button
                   class="med-dropdown-item med-dropdown-delete"
                   (click)="deleteMedicine(med.id); $event.stopPropagation()"
@@ -136,8 +129,10 @@
 
           <div class="med-details">
             <div class="med-info">
-              <p><strong>Cantidad:</strong> {{ med.quantity }} {{ med.unit }}</p>
-              <p><strong>Dosis:</strong> {{ med.dosage }}</p>
+              <!-- availableContent viene del endpoint GET /items -->
+              <p><strong>Disponible:</strong> {{ med.quantity }} {{ med.unit }}</p>
+              <!-- place.name viene del endpoint -->
+              <p><strong>Ubicación:</strong> {{ med.placeName }}</p>
             </div>
 
             <div class="med-expiry">
