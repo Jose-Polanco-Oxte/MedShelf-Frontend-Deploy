@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
-import { LucideAngularModule, Plus, ChevronDown, ArrowLeft } from 'lucide-angular';
+import { LucideAngularModule, Plus, ChevronDown, ArrowLeft, Pill, PillBottle } from 'lucide-angular';
 import { RouterLink } from '@angular/router';
 import { TreatmentsService, TreatmentResponse } from '../../core/services/treatments.service';
 import { ProfilesService } from '../../core/services/profiles.service';
@@ -34,7 +34,7 @@ export class Meds implements OnInit {
   private readonly itemsService = inject(ItemsService);
   private readonly consumptionsService = inject(ConsumptionsService);
 
-  icons = { plus: Plus, chevronDown: ChevronDown, arrowLeft: ArrowLeft };
+  icons = { plus: Plus, chevronDown: ChevronDown, arrowLeft: ArrowLeft, pillBottle: PillBottle, pill: Pill };
   isLoading = false;
   errorMessage = '';
   treatments = signal<TreatmentResponse[]>([]);
@@ -97,7 +97,7 @@ export class Meds implements OnInit {
     }
 
     // si ya tenemos los items cacheados, solo expandir
-    if (this.itemDetails()[treatmentId]) {
+    if (this.itemDetails()[treatmentId] !== undefined) {
       this.expandedId.set(treatmentId);
       return;
     }
@@ -115,7 +115,12 @@ export class Meds implements OnInit {
           console.log('Items del tratamiento cargados:', response);
         },
         error: () => {
-          this.errorMessage = 'Error al cargar los detalles del medicamento';
+          // Si hay error, mostrar lista vacía igualmente
+          this.itemDetails.update((prev) => ({
+            ...prev,
+            [treatmentId]: [],
+          }));
+          this.expandedId.set(treatmentId);
         },
       });
   }

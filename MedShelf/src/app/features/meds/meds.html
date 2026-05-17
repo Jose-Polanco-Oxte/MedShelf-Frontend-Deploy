@@ -1,11 +1,16 @@
 <main class="treatment-container">
   <div class="header">
+    <div class="welcome-container">
+      <h2>Tratamientos</h2>
+    </div>
+  </div>
+  <!-- <div class="header">
     <h2>Tratamientos</h2>
     <a routerLink="add-treatment" class="fab" title="Agregar tratamiento">
       <lucide-angular [img]="icons.plus" size="20" class="fab-icon"></lucide-angular>
       Agregar
     </a>
-  </div>
+  </div> -->
 
   @if (errorMessage) {
     <div class="form-error">
@@ -17,74 +22,77 @@
     <p class="section-label">Todos los tratamientos</p>
 
     @for (treatment of treatments(); track treatment.id) {
-      <div
-        class="treatment-card"
-        [class.expanded]="expandedId() === treatment.id"
-        (click)="toggleExpand(treatment)"
-      >
-        <!-- Fila principal -->
-        <div class="card-main">
-          <div class="card-left">
-            <span class="card-icon">💊</span>
-          </div>
-          <div class="card-body">
-            <h3 class="card-name">
-              {{ treatment.product?.name ? treatment.product.name : '—' }}
-            </h3>
-            <p class="card-meta">
-              {{ treatment.dose ? treatment.dose : '—' }} dosis · Cada
-              {{ treatment.frequencyHours ? treatment.frequencyHours : '—' }} h
-              @if (treatment.days) {
-                · {{ treatment.days }} días
-              }
-            </p>
-          </div>
-          <div class="card-right">
-            <span
-              class="status-badge"
-              [class.status-active]="isActive(treatment)"
-              [class.status-inactive]="!isActive(treatment)"
-            >
-              {{ treatment.status }}
-            </span>
-            <lucide-angular
-              [img]="icons.chevronDown"
-              size="16"
-              class="chevron"
-              [class.rotated]="expandedId() === treatment.id"
-            ></lucide-angular>
+      <div class="treatment-wrapper">
+        <div
+          class="treatment-card"
+          [class.expanded]="expandedId() === treatment.id"
+          (click)="toggleExpand(treatment)"
+        >
+          <!-- Fila principal -->
+          <div class="card-main">
+            <div class="card-left">
+              <span class="card-icon">
+                <lucide-angular [img]="icons.pillBottle" size="16" class="treatment-icon"></lucide-angular>
+              </span>
+            </div>
+            <div class="card-body">
+              <h3 class="card-name">
+                {{ treatment.product?.name ? treatment.product.name : '—' }}
+              </h3>
+              <p class="card-meta">
+                {{ treatment.dose ? treatment.dose : '—' }} dosis · Cada
+                {{ treatment.frequencyHours ? treatment.frequencyHours : '—' }} h
+                @if (treatment.days) {
+                  · {{ treatment.days }} días
+                }
+              </p>
+            </div>
+            <div class="card-right">
+              <lucide-angular
+                [img]="icons.chevronDown"
+                size="16"
+                class="chevron"
+                [class.rotated]="expandedId() === treatment.id"
+              ></lucide-angular>
+            </div>
           </div>
         </div>
 
-        <!-- Detalle expandible -->
+        <!-- Detalle expandible (fuera del card) -->
         @if (expandedId() === treatment.id) {
           <div class="card-detail" (click)="$event.stopPropagation()">
-            @if (itemDetails()[treatment.id]; as item) {
-              @for (medItem of item; track medItem.id) {
-                <div class="detail-item-card">
-                  <div class="detail-row">
-                    <span class="detail-label">Ubicación</span>
-                    <span class="detail-value">{{ medItem.place?.name ?? '—' }}</span>
+            @if (itemDetails()[treatment.id]; as items) {
+              @if (items.length > 0) {
+                @for (medItem of items; track medItem.id) {
+                  <div class="detail-item-card">
+                    <div>
+                      <div class="detail-row">
+                        <span class="detail-label">Ubicación: </span>
+                        <span class="detail-value">{{ medItem.place?.name ?? '—' }}</span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">Disponible: </span>
+                        <span class="detail-value">{{ medItem.availableContent ?? '—' }}</span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">Vencimiento: </span>
+                        <span class="detail-value">{{
+                          medItem.expirationDate | date: 'dd/MM/yyyy'
+                        }}</span>
+                      </div>
+                    </div>
+                    <div class="detail-actions">
+                      <button
+                        class="detail-btn detail-btn-primary"
+                        (click)="registerConsumption(medItem.id, treatment.dose)"
+                      >
+                        Tomar dosis
+                      </button>
+                    </div>
                   </div>
-                  <div class="detail-row">
-                    <span class="detail-label">Disponible</span>
-                    <span class="detail-value">{{ medItem.availableContent ?? '—' }}</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">Vencimiento</span>
-                    <span class="detail-value">{{
-                      medItem.expirationDate | date: 'dd/MM/yyyy'
-                    }}</span>
-                  </div>
-                  <div class="detail-actions">
-                    <button
-                      class="detail-btn detail-btn-primary"
-                      (click)="registerConsumption(medItem.id, treatment.dose)"
-                    >
-                      Tomar {{ treatment.dose }} dosis
-                    </button>
-                  </div>
-                </div>
+                }
+              } @else {
+                <p class="detail-no-items">Este medicamento no está disponible en el botiquín</p>
               }
             } @else {
               <p class="detail-loading">Cargando detalles...</p>
@@ -95,8 +103,7 @@
     }
   </section>
 
-  <!-- Botón de Acción Flotante -->
-  <a class="fab" routerLink="add-medicine" title="Agregar medicamento">
-    <lucide-angular [img]="icons.plus" size="28" class="fab-icon"></lucide-angular>
+  <a class="fab" routerLink="add-treatment" title="Agregar tratamiento">
+    <lucide-angular [img]="icons.plus" size="24" class="fab-icon"></lucide-angular>
   </a>
 </main>

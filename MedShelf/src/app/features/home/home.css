@@ -14,8 +14,13 @@
   background: var(--page-background);
 }
 
-div {
-  box-sizing: border-box;
+.home-container {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 /* ── Header ── */

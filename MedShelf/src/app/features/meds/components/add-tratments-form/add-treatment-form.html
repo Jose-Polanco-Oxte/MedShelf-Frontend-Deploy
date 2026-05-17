@@ -1,11 +1,11 @@
-<div class="form-wrapper">
-  <div class="fab-return">
-    <a routerLink="/meds" title="Volver">
-      <lucide-angular [img]="icons.arrowLeft" size="24" class="fab-icon"></lucide-angular>
+<div class="edit-profile-container">
+  <div class="header-actions">
+    <a routerLink="/meds" class="btn-back" title="Volver">
+      <lucide-angular [img]="icons.arrowLeft" size="24"></lucide-angular>
     </a>
+    <h2>Agregar Tratamiento</h2>
+    <div style="width: 48px;"></div>
   </div>
-
-  <h2>Agregar Tratamiento</h2>
 
   @if (errorMessage) {
     <div class="form-error">
@@ -13,127 +13,124 @@
     </div>
   }
 
-  <!-- Perfil -->
-  <div class="form-group">
-    <label for="profileId">Perfil</label>
-    @if (isLoadingProfiles) {
-      <select disabled>
-        <option>Cargando perfiles...</option>
-      </select>
-    } @else {
-      <select id="profileId" name="profileId" [(ngModel)]="formData.profileId" required>
-        <option value="">Selecciona un perfil</option>
-        @for (profile of profiles; track profile.id) {
-          <option [value]="profile.id">{{ profile.name }}</option>
-        }
-      </select>
-    }
-  </div>
+  <form class="edit-form" (ngSubmit)="saveTreatment()">
+    <div class="form-group">
+      <label for="profileId">Perfil</label>
+      @if (isLoadingProfiles) {
+        <select disabled>
+          <option>Cargando perfiles...</option>
+        </select>
+      } @else {
+        <select id="profileId" name="profileId" [(ngModel)]="formData.profileId" required>
+          <option value="">Selecciona un perfil</option>
+          @for (profile of profiles; track profile.id) {
+            <option [value]="profile.id">{{ profile.name }}</option>
+          }
+        </select>
+      }
+    </div>
 
-  <!-- Combobox de medicamentos -->
-  <div class="form-group">
-    <label for="item-search">Medicamento del botiquín</label>
-    <div class="combobox" id="item-combobox">
-      <div class="combobox-input-wrapper" (click)="openDropdown()">
-        <input
-          id="item-search"
-          type="text"
-          class="combobox-input"
-          placeholder="Buscar medicamento..."
-          [value]="itemSearchText"
-          (input)="onSearchChange($any($event.target).value)"
-          autocomplete="off"
-        />
-        @if (formData.productId) {
-          <button type="button" class="combobox-clear" (click)="clearItem($event)" title="Limpiar">
-            <lucide-angular [img]="icons.x" size="14"></lucide-angular>
-          </button>
-        } @else {
-          <lucide-angular
-            [img]="icons.chevronDown"
-            size="16"
-            class="combobox-arrow"
-          ></lucide-angular>
+    <div class="form-group">
+      <label for="item-search">Medicamento del botiquín</label>
+      <div class="combobox" id="item-combobox">
+        <div class="combobox-input-wrapper" (click)="openDropdown()">
+          <input
+            id="item-search"
+            type="text"
+            class="combobox-input"
+            placeholder="Buscar medicamento..."
+            [value]="itemSearchText"
+            (input)="onSearchChange($any($event.target).value)"
+            autocomplete="off"
+          />
+          @if (formData.productId) {
+            <button type="button" class="combobox-clear" (click)="clearItem($event)" title="Limpiar">
+              <lucide-angular [img]="icons.x" size="14"></lucide-angular>
+            </button>
+          } @else {
+            <lucide-angular
+              [img]="icons.chevronDown"
+              size="16"
+              class="combobox-arrow"
+            ></lucide-angular>
+          }
+        </div>
+
+        @if (isDropdownOpen) {
+          <div class="combobox-dropdown">
+            @if (isLoadingItems) {
+              <div class="combobox-state">Cargando...</div>
+            } @else if (items.length === 0) {
+              <div class="combobox-state">Sin resultados</div>
+            } @else {
+              <ul class="combobox-list">
+                @for (item of items; track item.id) {
+                  <li
+                    class="combobox-option"
+                    [class.selected]="formData.productId === item.id"
+                    (click)="selectItem(item)"
+                  >
+                    {{ item.label }}
+                  </li>
+                }
+              </ul>
+              @if (hasMoreItems) {
+                <button type="button" class="combobox-load-more" (click)="loadMoreProducts()">
+                  Cargar más
+                </button>
+              }
+            }
+          </div>
         }
       </div>
+    </div>
 
-      @if (isDropdownOpen) {
-        <div class="combobox-dropdown">
-          @if (isLoadingItems) {
-            <div class="combobox-state">Cargando...</div>
-          } @else if (items.length === 0) {
-            <div class="combobox-state">Sin resultados</div>
-          } @else {
-            <ul class="combobox-list">
-              @for (item of items; track item.id) {
-                <li
-                  class="combobox-option"
-                  [class.selected]="formData.productId === item.id"
-                  (click)="selectItem(item)"
-                >
-                  {{ item.label }}
-                </li>
-              }
-            </ul>
-            @if (hasMoreItems) {
-              <button type="button" class="combobox-load-more" (click)="loadMoreProducts()">
-                Cargar más
-              </button>
-            }
-          }
+    <div class="form-group">
+      <label for="dose">Cantidad por dosis</label>
+      <input
+        type="number"
+        id="dose"
+        name="dose"
+        [(ngModel)]="formData.dose"
+        min="1"
+        placeholder="Ej. 1"
+        required
+      />
+    </div>
+
+    <div class="form-section">
+      <h3>Horario de administración</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="frequency">Cada cuántas horas</label>
+          <input
+            type="number"
+            id="frequency"
+            name="frequency"
+            [(ngModel)]="formData.frequency"
+            min="1"
+            max="24"
+            placeholder="Ej. 8"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="startDate">Fecha de inicio</label>
+          <input type="date" id="startDate" name="startDate" [(ngModel)]="formData.startDate" />
+        </div>
+      </div>
+
+      @if (getNextScheduledTimes().length > 0) {
+        <div class="schedule-hint">
+          <p>Próximas tomas: {{ getNextScheduledTimes().join(' · ') }}</p>
         </div>
       }
     </div>
-  </div>
 
-  <!-- Dosis -->
-  <div class="form-group">
-    <label for="dose">Cantidad por dosis</label>
-    <input
-      type="number"
-      id="dose"
-      name="dose"
-      [(ngModel)]="formData.dose"
-      min="1"
-      placeholder="Ej. 1"
-      required
-    />
-  </div>
-
-  <!-- Horario -->
-  <div class="form-section">
-    <h3>Horario de administración</h3>
-    <div class="form-row">
+    <div class="form-section">
+      <h3>Duracion del tratamiento</h3>
       <div class="form-group">
-        <label for="frequency">Cada cuántas horas</label>
-        <input
-          type="number"
-          id="frequency"
-          name="frequency"
-          [(ngModel)]="formData.frequency"
-          min="1"
-          max="24"
-          placeholder="Ej. 8"
-        />
-      </div>
-      <div class="form-group">
-        <label for="startDate">Fecha de inicio</label>
-        <input type="date" id="startDate" name="startDate" [(ngModel)]="formData.startDate" />
-      </div>
-    </div>
-
-    <!-- Próximas tomas (informativo) -->
-    @if (getNextScheduledTimes().length > 0) {
-      <p class="schedule-hint">Próximas tomas: {{ getNextScheduledTimes().join(' · ') }}</p>
-    }
-  </div>
-
-  <!-- Duración -->
-  <div class="form-section">
-    <h3>Duración del tratamiento</h3>
-    <div class="form-row">
-      <div class="form-group">
-        <label for="duration">Cantidad</label>
+        <label for="duration">Duración del tratamiento</label>
         <input
           type="number"
           id="duration"
@@ -144,11 +141,12 @@
         />
       </div>
     </div>
-  </div>
 
-  <!-- Botón -->
-  <button type="button" class="submit-btn" [disabled]="isLoading" (click)="saveTreatment()">
-    <lucide-angular [img]="icons.check" size="20" class="btn-icon"></lucide-angular>
-    {{ isLoading ? 'Guardando...' : 'Guardar Tratamiento' }}
-  </button>
+    <div class="form-actions">
+      <button type="submit" class="btn-save" [disabled]="isLoading">
+        <lucide-angular [img]="icons.save" size="20"></lucide-angular>
+        {{ isLoading ? 'Guardando...' : 'Guardar Tratamiento' }}
+      </button>
+    </div>
+  </form>
 </div>
