@@ -7,10 +7,23 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { TreatmentsService } from '../../../../core/services/treatments.service';
 import { ItemsService } from '../../../../core/services/items.service';
 import { ProfilesService, Profile } from '../../../../core/services/profiles.service';
+import { ProductsService } from '../../../../core/services/products.service';
 
 interface ItemOption {
   id: string;
   label: string;
+}
+
+interface Medicine {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  dosage: string;
+  expiryDate: Date;
+  status: 'valid' | 'expiringNext' | 'expired';
+  instructions?: string;
+  selected?: boolean;
 }
 
 @Component({
@@ -24,6 +37,7 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
   private readonly treatmentsService = inject(TreatmentsService);
   private readonly profilesService = inject(ProfilesService);
   private readonly itemsService = inject(ItemsService);
+  private readonly productsService = inject(ProductsService);
 
   private readonly destroy$ = new Subject<void>();
   private readonly searchInput$ = new Subject<string>();
@@ -31,17 +45,22 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
   icons = { arrowLeft: ArrowLeft, check: Check, chevronDown: ChevronDown, x: X };
 
   // Combobox
+  medicines = signal<Medicine[]>([]);
+  filteredMedicines = signal<Medicine[]>([]);
+
   items: ItemOption[] = [];
   itemSearchText = '';
   selectedItemName = '';
   isDropdownOpen = false;
+  isLoadingProducts = false;
   isLoadingItems = false;
   hasMoreItems = false;
+  searchTerm = signal('');
 
   // Form
   formData = {
     profileId: '',
-    itemId: '',
+    productId: '',
     dose: '',
     frequency: 8,
     startDate: new Date().toISOString().slice(0, 10),
@@ -54,7 +73,7 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
   errorMessage = '';
 
   ngOnInit(): void {
-    this.loadInitialItems();
+    this.loadInitialProducts();
     this.setupSearch();
     this.loadProfiles();
   }
@@ -64,14 +83,14 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private setupSearch(): void {
+  setupSearch(): void {
     this.searchInput$
       .pipe(debounceTime(350), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((term) => {
         this.isLoadingItems = true;
-        this.itemsService.getItemsByHouse(term ? { 'filter[name]': term } : undefined).subscribe({
-          next: (response: any) => {
-            this.updateItemsFromResponse(response);
+        this.productsService.getProducts(term ? { 'filter[name]': term } : undefined).subscribe({
+          next: () => {
+            this.updateProductsFromService();
             this.isLoadingItems = false;
           },
           error: () => (this.isLoadingItems = false),
@@ -93,22 +112,51 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
     });
   }
 
-  loadInitialItems() {
-    this.isLoadingItems = true;
-    this.itemsService.getItemsByHouse().subscribe({
-      next: (response: any) => {
-        this.updateItemsFromResponse(response);
-        this.isLoadingItems = false;
+  loadInitialProducts() {
+    this.isLoadingProducts = true;
+    this.productsService.getProducts().subscribe({
+      next: () => {
+        this.updateProductsFromService();
+        this.isLoadingProducts = false;
       },
       error: () => {
-        this.items = [];
-        this.isLoadingItems = false;
-        this.hasMoreItems = false;
+        this.isLoadingProducts = false;
+        this.errorMessage = 'No se pudieron cargar los productos.';
       },
     });
   }
 
+  loadMoreProducts() {
+    if (this.isLoadingItems) return;
+    this.isLoadingItems = true;
+    const obs = this.productsService.loadMore(
+      this.itemSearchText ? { 'filter[name]': this.itemSearchText } : undefined,
+    );
+    if (!obs) {
+      this.isLoadingItems = false;
+      return;
+    }
+    obs.subscribe({
+      next: () => {
+        this.updateProductsFromService();
+        this.isLoadingItems = false;
+      },
+      error: () => {
+        this.isLoadingItems = false;
+      },
+    });
+  }
+
+  getMedicineStatus(expiryDate: Date): Medicine['status'] {
+    const now = new Date();
+    const diffInDays = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffInDays < 0) return 'expired';
+    if (diffInDays <= 30) return 'expiringNext';
+    return 'valid';
+  }
+
   private updateItemsFromResponse(response: any): void {
+    // keep for backwards compatibility (not used currently)
     const rawItems: any[] = response?.items ?? [];
     this.hasMoreItems = !!response?.nextCursor;
     this.items = rawItems.map((item) => ({
@@ -117,12 +165,18 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
     }));
   }
 
+  private updateProductsFromService(): void {
+    const products = this.productsService.products();
+    this.hasMoreItems = this.productsService.hasMore();
+    this.items = products.map((p: any) => ({ id: p.id, label: `${p.name} — ${p.units ?? ''}` }));
+  }
+
   // --- Combobox handlers ---
 
   onSearchChange(term: string): void {
     this.itemSearchText = term;
-    if (this.formData.itemId) {
-      this.formData.itemId = '';
+    if (this.formData.productId) {
+      this.formData.productId = '';
       this.selectedItemName = '';
     }
     this.searchInput$.next(term);
@@ -133,7 +187,7 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
   }
 
   selectItem(item: ItemOption): void {
-    this.formData.itemId = item.id;
+    this.formData.productId = item.id;
     this.selectedItemName = item.label;
     this.itemSearchText = item.label;
     this.isDropdownOpen = false;
@@ -141,10 +195,10 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
 
   clearItem(event: Event): void {
     event.stopPropagation();
-    this.formData.itemId = '';
+    this.formData.productId = '';
     this.selectedItemName = '';
     this.itemSearchText = '';
-    this.loadInitialItems();
+    this.loadInitialProducts();
   }
 
   @HostListener('document:click', ['$event'])
@@ -185,7 +239,7 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
       this.errorMessage = 'Selecciona un perfil.';
       return;
     }
-    if (!this.formData.itemId || !this.formData.dose) {
+    if (!this.formData.productId || !this.formData.dose) {
       this.errorMessage = 'Completa todos los campos requeridos.';
       return;
     }
@@ -195,7 +249,7 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
 
     this.treatmentsService
       .createTreatment(this.formData.profileId, {
-        itemId: this.formData.itemId,
+        productId: this.formData.productId,
         dose: Number(this.formData.dose),
         frequencyHours: this.formData.frequency,
         startDate: this.formData.startDate,

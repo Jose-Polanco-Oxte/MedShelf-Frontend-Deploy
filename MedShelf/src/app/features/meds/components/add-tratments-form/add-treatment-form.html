@@ -44,7 +44,7 @@
           (input)="onSearchChange($any($event.target).value)"
           autocomplete="off"
         />
-        @if (formData.itemId) {
+        @if (formData.productId) {
           <button type="button" class="combobox-clear" (click)="clearItem($event)" title="Limpiar">
             <lucide-angular [img]="icons.x" size="14"></lucide-angular>
           </button>
@@ -68,7 +68,7 @@
               @for (item of items; track item.id) {
                 <li
                   class="combobox-option"
-                  [class.selected]="formData.itemId === item.id"
+                  [class.selected]="formData.productId === item.id"
                   (click)="selectItem(item)"
                 >
                   {{ item.label }}
@@ -76,7 +76,7 @@
               }
             </ul>
             @if (hasMoreItems) {
-              <button type="button" class="combobox-load-more" (click)="loadInitialItems()">
+              <button type="button" class="combobox-load-more" (click)="loadMoreProducts()">
                 Cargar más
               </button>
             }
