@@ -57,7 +57,6 @@ div {
   display: flex;
   flex-flow: row nowrap;
   gap: 1rem;
-  margin-bottom: 1.5rem;
   background: var(--card-bg);
   border-radius: 12px;
   padding: 1rem 0.5rem;
@@ -67,6 +66,7 @@ div {
   border: 1px solid var(--border-lighter);
   text-align: center;
   overflow: hidden;
+  margin-bottom: 1rem;
 }
 
 .stat-card {
@@ -143,16 +143,16 @@ div {
   height: auto;
   text-align: center;
   display: flex;
+  flex-flow: column nowrap;
   align-items: center;
   justify-content: center;
   width: 100%;
-  gap: 1rem;
 }
 
 .stat-content {
   overflow: hidden;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
 }
@@ -164,14 +164,6 @@ div {
   font-weight: 500;
   word-break: break-word;
   line-height: 1.2;
-}
-
-.stat-info {
-  color: var(--text-tertiary);
-  font-size: 0.65rem;
-  word-break: break-word;
-  line-height: 1.3;
-  margin: 0;
 }
 
 .stat-value {
@@ -231,6 +223,8 @@ div {
     box-shadow 0.3s ease;
   min-height: 140px;
   border: 1px solid var(--border-lighter);
+  /* border: 1px solid var(--border-lighter); */
+  border-left: 5px solid var(--primary-blue);
   overflow: visible;
   z-index: 1;
 }
@@ -324,15 +318,12 @@ div {
 .med-details {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
 }
 
 .med-info {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  margin-bottom: 0.5rem;
 }
 
 .med-info > div {

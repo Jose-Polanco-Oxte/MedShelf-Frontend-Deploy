@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, inject, HostListener, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, HostListener, signal, ChangeDetectorRef } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
-import { LucideAngularModule, ArrowLeft, Check, ChevronDown, X } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Save, ChevronDown, X } from 'lucide-angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
@@ -38,11 +38,12 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
   private readonly profilesService = inject(ProfilesService);
   private readonly itemsService = inject(ItemsService);
   private readonly productsService = inject(ProductsService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   private readonly destroy$ = new Subject<void>();
   private readonly searchInput$ = new Subject<string>();
 
-  icons = { arrowLeft: ArrowLeft, check: Check, chevronDown: ChevronDown, x: X };
+  icons = { arrowLeft: ArrowLeft, save: Save, chevronDown: ChevronDown, x: X };
 
   // Combobox
   medicines = signal<Medicine[]>([]);
@@ -104,10 +105,12 @@ export class AddTreatmentForm implements OnInit, OnDestroy {
       next: () => {
         this.profiles = this.profilesService.profiles();
         this.isLoadingProfiles = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.isLoadingProfiles = false;
         this.errorMessage = 'No se pudieron cargar los perfiles.';
+        this.cdr.detectChanges();
       },
     });
   }
