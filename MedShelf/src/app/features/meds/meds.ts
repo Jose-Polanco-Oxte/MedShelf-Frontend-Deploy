@@ -1,59 +1,133 @@
-import { NgClass, CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
-import { LucideAngularModule, Plus } from 'lucide-angular';
+import { LucideAngularModule, Plus, ChevronDown, ArrowLeft } from 'lucide-angular';
 import { RouterLink } from '@angular/router';
 import { TreatmentsService, TreatmentResponse } from '../../core/services/treatments.service';
+import { ProfilesService } from '../../core/services/profiles.service';
+import { ItemsService } from '../../core/services/items.service';
+import { ConsumptionsService } from '../../core/services/consumptions.service';
+import { signal } from '@angular/core';
+
+interface ExpandedItem {
+  id: string;
+  product?: {
+    id: string;
+    name: string;
+  };
+  place?: {
+    id: string;
+    name: string;
+  };
+  availableContent?: number;
+  expirationDate?: string;
+}
 
 @Component({
   selector: 'app-meds',
-  imports: [NgClass, CommonModule, LucideAngularModule, RouterLink],
+  imports: [CommonModule, LucideAngularModule, RouterLink],
   templateUrl: './meds.html',
   styleUrl: './meds.css',
 })
 export class Meds implements OnInit {
   private readonly treatmentsService = inject(TreatmentsService);
+  private readonly profilesService = inject(ProfilesService);
+  private readonly itemsService = inject(ItemsService);
+  private readonly consumptionsService = inject(ConsumptionsService);
 
-  icons = { plus: Plus };
-
+  icons = { plus: Plus, chevronDown: ChevronDown, arrowLeft: ArrowLeft };
   isLoading = false;
   errorMessage = '';
+  treatments = signal<TreatmentResponse[]>([]);
+  expandedId = signal<string | null>(null);
 
-  get treatments() {
-    return this.treatmentsService.treatments();
+  // map de treatmentId -> items del medicamento
+  itemDetails = signal<Record<string, ExpandedItem[]>>({});
+
+  get activeTreatments(): TreatmentResponse[] {
+    return this.treatments().filter((t) => t.status === 'active');
   }
 
-  get hasMore() {
+  get hasMore(): boolean {
     return this.treatmentsService.hasMore();
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadTreatments();
-  }
-
-  loadTreatments() {
-    this.isLoading = true;
-    this.treatmentsService.getTreatments().subscribe({
-      next: () => {
-        this.isLoading = false;
-      },
-      error: () => {
-        this.isLoading = false;
-        this.errorMessage = 'No se pudieron cargar los tratamientos.';
-      },
-    });
-  }
-
-  loadMore() {
-    const obs = this.treatmentsService.loadMore();
-    if (!obs) return;
-    obs.subscribe();
-  }
-
-  formatFrequency(treatment: TreatmentResponse): string {
-    return `${treatment.doseQuantity} dosis • Cada ${treatment.frequencyValue} ${treatment.frequencyUnit}`;
   }
 
   isActive(treatment: TreatmentResponse): boolean {
     return treatment.status === 'active';
+  }
+
+  loadTreatments(): void {
+    this.isLoading = true;
+    this.treatmentsService.getAllTreatments().subscribe({
+      next: () => {
+        this.treatments.set(this.treatmentsService.treatments());
+        this.isLoading = false;
+      },
+      error: () => {
+        this.errorMessage = 'Error al cargar los tratamientos';
+        this.isLoading = false;
+      },
+    });
+  }
+
+  loadTreatmentsByProfile(profileId: string): void {
+    this.isLoading = true;
+    this.treatmentsService.getTreatmentsByProfile(profileId).subscribe({
+      next: () => {
+        this.treatments.set(this.treatmentsService.treatments());
+        this.isLoading = false;
+      },
+      error: () => {
+        this.errorMessage = 'Error al cargar los tratamientos por perfil';
+        this.isLoading = false;
+      },
+    });
+  }
+
+  toggleExpand(treatment: TreatmentResponse): void {
+    const treatmentId = treatment.id;
+
+    // colapsar si ya está abierto
+    if (this.expandedId() === treatmentId) {
+      this.expandedId.set(null);
+      return;
+    }
+
+    // si ya tenemos los items cacheados, solo expandir
+    if (this.itemDetails()[treatmentId]) {
+      this.expandedId.set(treatmentId);
+      return;
+    }
+
+    // cargar items del botiquín y guardar bajo treatmentId
+    this.itemsService
+      .getItemsInMedkit(treatment.product.id, { 'filter[productId]': treatment.product.id })
+      .subscribe({
+        next: (response: any) => {
+          this.itemDetails.update((prev) => ({
+            ...prev,
+            [treatmentId]: (response?.items ?? []) as ExpandedItem[],
+          }));
+          this.expandedId.set(treatmentId);
+          console.log('Items del tratamiento cargados:', response);
+        },
+        error: () => {
+          this.errorMessage = 'Error al cargar los detalles del medicamento';
+        },
+      });
+  }
+
+  registerConsumption(itemId: string, amount: number): void {
+    this.consumptionsService.addConsumption(itemId, amount).subscribe({
+      next: () => {
+        this.loadTreatments();
+      },
+      error: () => {
+        this.errorMessage = 'Error al registrar el consumo';
+      },
+    });
   }
 }

@@ -8,6 +8,7 @@ interface ListItemsParams {
   cursor?: string;
   size?: number;
   'filter[name]'?: string;
+  'filter[productId]'?: string;
 }
 
 export interface AddItemToPlaceRequest {
@@ -17,17 +18,28 @@ export interface AddItemToPlaceRequest {
 
 interface Product {
   id: string;
+  name: string;
+  netContent: {
+    value: number;
+    unit: string;
+  };
+  totalQuantity: number;
+  pharmaceuticalForm: {
+    name: string;
+    consumptionType: string;
+  };
 }
 
 interface Place {
   id: string;
+  name: string;
 }
 
 export interface ItemResponse {
   id: string;
   product: Product;
   place: Place;
-  totalContent: number;
+  availableContent: number;
   expirationDate: string;
   createdAt: string;
 }
@@ -87,6 +99,14 @@ export class ItemsService {
     return this.api.delete(`/items/${itemId}`).pipe(
       tap(() => {
         this.getItemsByHouse().subscribe();
+      }),
+    );
+  }
+
+  getItemsInMedkit(medkitId: string, params?: ListItemsParams) {
+    return this.api.get<ItemsListResponse>(`/items`, params ? { params } : undefined).pipe(
+      tap((response) => {
+        this._items.set(response);
       }),
     );
   }

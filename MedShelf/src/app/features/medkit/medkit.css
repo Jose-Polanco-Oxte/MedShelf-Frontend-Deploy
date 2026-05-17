@@ -54,7 +54,7 @@ div {
   color: var(--error-text);
 }
 
-/* Statistics Section */
+/* ── Statistics Section ── */
 .stats-section {
   display: flex;
   flex-flow: row nowrap;
@@ -62,7 +62,7 @@ div {
   margin-bottom: 1.5rem;
   background: var(--card-bg);
   border-radius: 12px;
-  padding: 1.25rem;
+  padding: 1rem 0.5rem;
   box-shadow: var(--card-shadow);
   justify-content: center;
   align-items: stretch;
@@ -72,6 +72,9 @@ div {
 }
 
 .stat-card {
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem 0.25rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -161,6 +164,16 @@ div {
   font-size: 0.85rem;
   margin: 0 0 0.3rem 0;
   font-weight: 500;
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+.stat-info {
+  color: var(--text-tertiary);
+  font-size: 0.65rem;
+  word-break: break-word;
+  line-height: 1.3;
+  margin: 0;
 }
 
 .stat-value {
@@ -170,7 +183,7 @@ div {
   word-break: break-word;
 }
 
-/* Barra de busqueda */
+/* ── Search ── */
 .search-section {
   margin-bottom: 1.5rem;
 }
@@ -200,7 +213,7 @@ div {
   color: var(--text-tertiary);
 }
 
-/* Medications Section */
+/* ── Medications Section ── */
 .medications-section {
   margin-bottom: 2rem;
 }
@@ -216,11 +229,9 @@ div {
   border-radius: 12px;
   padding: 1.25rem;
   box-shadow: var(--card-shadow);
-  border-left: 5px solid var(--primary-blue);
   transition:
     transform 0.3s ease,
     box-shadow 0.3s ease;
-  cursor: pointer;
   min-height: 140px;
   border: 1px solid var(--border-lighter);
   border-left: 5px solid var(--primary-blue);
@@ -257,13 +268,18 @@ div {
   color: var(--primary-blue);
   margin-right: 0.5rem;
   flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .med-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
+  align-items: flex-start;
+  gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
@@ -272,9 +288,12 @@ div {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-width: 0;
 }
 
-.med-header h3 {
+.med-title-section h3 {
+  word-break: break-word;
+  overflow-wrap: break-word;
   margin: 0;
   color: var(--heading-color);
   font-size: 1.15rem;
@@ -307,11 +326,22 @@ div {
 }
 
 .med-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
 .med-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
   margin-bottom: 0.5rem;
+}
+
+.med-info > div {
+  flex: 1;
+  min-width: 150px;
 }
 
 .med-info p {
@@ -326,13 +356,14 @@ div {
 }
 
 .med-expiry {
-  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
 }
 
 .med-expiry p {
   margin: 0.25rem 0;
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .med-expiry strong {
@@ -353,6 +384,7 @@ div {
   color: #f44336;
 }
 
+/* ── Dropdown ── */
 .med-actions-container {
   position: relative;
   display: flex;
@@ -379,7 +411,59 @@ div {
   background-color: var(--bg-secondary);
 }
 
-/* Selection Bar */
+.med-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  box-shadow: var(--card-shadow-hover);
+  width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+}
+
+.med-dropdown.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.med-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease;
+  min-height: 44px;
+}
+
+.med-dropdown-item:hover {
+  background-color: var(--bg-secondary);
+}
+
+.med-dropdown-delete:hover {
+  background-color: #ffebee;
+  color: #f44336;
+}
+
+.med-dropdown-item svg {
+  flex-shrink: 0;
+}
+
+/* ── Selection Bar ── */
 .selection-bar {
   display: flex;
   flex-direction: column;
@@ -440,67 +524,7 @@ div {
   transform: translateY(-2px);
 }
 
-.med-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: var(--bg-primary);
-  border-radius: 8px;
-  box-shadow: var(--card-shadow-hover);
-  width: 200px;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
-  z-index: 1000;
-  max-height: auto;
-  overflow-y: auto;
-  padding: 0.5rem 0;
-  margin-top: 0.5rem;
-}
-
-.med-dropdown.active {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.med-dropdown-item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.9rem 1rem;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  transition: background-color 0.2s ease;
-  min-height: 44px;
-}
-
-.med-dropdown-item:first-child {
-  border-radius: 0;
-}
-
-.med-dropdown-item:last-child {
-  border-radius: 0;
-}
-
-.med-dropdown-item:hover {
-  background-color: var(--bg-secondary);
-}
-
-.med-dropdown-delete:hover {
-  background-color: #ffebee;
-  color: #f44336;
-}
-
-.med-dropdown-item svg {
-  flex-shrink: 0;
-}
-
+/* ── Empty State ── */
 .no-results {
   text-align: center;
   padding: 3rem 1rem;
@@ -509,10 +533,10 @@ div {
 
 .no-results p {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
-/* Floating Action Button */
+/* ── FAB ── */
 .fab {
   position: fixed;
   bottom: 4.5rem;
@@ -544,98 +568,7 @@ div {
   transform: scale(0.92);
 }
 
-/* Mobile Optimizations */
-.stat-icon {
-  min-width: 50px;
-  height: auto;
-  text-align: center;
-}
-
-.med-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.med-title-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  min-width: 0;
-}
-
-.med-title-section h3 {
-  word-break: break-word;
-  overflow-wrap: break-word;
-}
-
-.med-checkbox {
-  color: var(--primary-contrast);
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.med-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.med-info {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.med-info > div {
-  flex: 1;
-  min-width: 150px;
-}
-
-.med-expiry {
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border-color);
-}
-
-.med-expiry p {
-  margin: 0.25rem 0;
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-}
-
-.expiry-date {
-  font-weight: 600;
-  color: #667eea;
-  font-size: 1rem;
-}
-
-.medication-card.status-expiringNext .expiry-date {
-  color: #ff9800;
-}
-
-.medication-card.status-expired .expiry-date {
-  color: #f44336;
-}
-
-.no-results {
-  text-align: center;
-  padding: 2rem 1rem;
-  color: var(--text-tertiary);
-}
-
-.no-results p {
-  margin: 0;
-  font-size: 1rem;
-}
-
-/* Touch-friendly spacing */
+/* ── Touch & Focus ── */
 button, a {
   -webkit-touch-callout: none;
   user-select: none;
@@ -646,7 +579,6 @@ input, textarea, select {
   padding: 0.75rem;
 }
 
-/* Improve focus states for mobile */
 .fab:focus,
 .btn-med-menu:focus,
 .btn-clear-selection:focus,
@@ -655,12 +587,3 @@ input, textarea, select {
   outline: 2px solid var(--brand-color);
   outline-offset: 2px;
 }
-
-/* Safe area for notched phones */
-main {
-  padding-left: max(1rem, env(safe-area-inset-left));
-  padding-right: max(1rem, env(safe-area-inset-right));
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: max(100px, calc(100px + env(safe-area-inset-bottom)));
-}
-

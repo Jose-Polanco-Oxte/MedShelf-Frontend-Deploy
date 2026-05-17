@@ -3,53 +3,56 @@ import { tap } from 'rxjs';
 import { ApiService } from '../../shared/services/api.service';
 
 interface ListTreatmentsParams {
-  profile_id?: string;
   page?: number;
   cursor?: string;
   size?: number;
 }
 
 interface CreateTreatmentRequest {
-  profileId: string;
-  itemId: string;
-  frequencyValue: number;
-  frequencyUnit: string;
-  doseQuantity: number;
+  productId: string;
+  dose: number;
+  frequencyHours: number;
   startDate: string;
-  endDate: string;
+  days: number;
 }
 
 interface UpdateTreatmentRequest {
-  frequencyValue?: number;
-  frequencyUnit?: string;
-  doseQuantity?: number;
-  endDate?: string;
+  dose?: number;
+  frequencyHours?: number;
+  status?: 'active' | 'completed' | 'paused';
+  startDate?: Date;
+  endDate?: Date;
 }
 
 interface RegisterConsumptionRequest {
   amount: number;
 }
 
-export interface TreatmentResponse {
+interface profile {
   id: string;
-  profileId: string;
-  itemId: string;
-  status: string;
-  frequencyValue: number;
-  frequencyUnit: string;
-  doseQuantity: number;
-  startDate: string;
-  endDate: string;
-  createdAt: string;
+  name: string;
 }
 
-export interface ItemReference {
+interface Product {
   id: string;
+  name: string;
+}
+
+export interface TreatmentResponse {
+  id: string;
+  profile: profile;
+  product: Product;
+  status: string;
+  dose: number;
+  frequencyHours: number;
+  startDate: string;
+  days: number;
+  createdAt: string;
 }
 
 export interface ConsumptionResponse {
   id: string;
-  item: ItemReference;
+  product: Product;
   amount: number;
   consumedAt: string;
 }
@@ -80,9 +83,12 @@ export class TreatmentsService {
 
   constructor(private api: ApiService) {}
 
-  getTreatments(params?: ListTreatmentsParams) {
+  getTreatmentsByProfile(profileId: string, params?: ListTreatmentsParams) {
     return this.api
-      .get<TreatmentsListResponse>('/treatments', params ? { params } : undefined)
+      .get<TreatmentsListResponse>(
+        `/profiles/${profileId}/treatments`,
+        params ? { params: params } : undefined,
+      )
       .pipe(
         tap(({ items, nextCursor }: TreatmentsListResponse) => {
           this._treatments.set(items);
@@ -91,15 +97,22 @@ export class TreatmentsService {
       );
   }
 
-  loadMore(params?: Omit<ListTreatmentsParams, 'cursor'>) {
-    const cursor = this._nextCursor();
-    if (!cursor) return null;
-
+  createTreatment(profileId: string, data: CreateTreatmentRequest) {
     return this.api
-      .get<TreatmentsListResponse>('/treatments', { params: { ...params, cursor } })
+      .post<TreatmentResponse>(`/profiles/${profileId}/treatments`, data)
+      .pipe(
+        tap((newTreatment) =>
+          this._treatments.update((prev: TreatmentResponse[]) => [newTreatment, ...prev]),
+        ),
+      );
+  }
+
+  getAllTreatments(params?: ListTreatmentsParams) {
+    return this.api
+      .get<TreatmentsListResponse>('/treatments', params ? { params: params } : undefined)
       .pipe(
         tap(({ items, nextCursor }: TreatmentsListResponse) => {
-          this._treatments.update((prev: TreatmentResponse[]) => [...prev, ...items]);
+          this._treatments.set(items);
           this._nextCursor.set(nextCursor);
         }),
       );
@@ -111,45 +124,25 @@ export class TreatmentsService {
       .pipe(tap((treatment) => this._selectedTreatment.set(treatment)));
   }
 
-  createTreatment(data: CreateTreatmentRequest) {
+  updateTreatment(treatmentId: string, updateTreatmentRequest: UpdateTreatmentRequest) {
     return this.api
-      .post<TreatmentResponse>('/treatments', data)
-      .pipe(tap((treatment) => this._treatments.update((prev) => [treatment, ...prev])));
+      .patch<TreatmentResponse>(`/treatments/${treatmentId}`, updateTreatmentRequest)
+      .pipe(
+        tap((updatedTreatment: TreatmentResponse) => {
+          this._treatments.update((prev: TreatmentResponse[]) =>
+            prev.map(
+              (treatment: TreatmentResponse): TreatmentResponse =>
+                treatment.id === treatmentId ? updatedTreatment : treatment,
+            ),
+          );
+          if (this._selectedTreatment()?.id === treatmentId) {
+            this._selectedTreatment.set(updatedTreatment);
+          }
+        }),
+      );
   }
 
-  updateTreatment(treatmentId: string, data: UpdateTreatmentRequest) {
-    return this.api.put<TreatmentResponse>(`/treatments/${treatmentId}`, data).pipe(
-      tap((updatedTreatment: TreatmentResponse) => {
-        this._treatments.update((prev: TreatmentResponse[]) =>
-          prev.map(
-            (treatment: TreatmentResponse): TreatmentResponse =>
-              treatment.id === treatmentId ? updatedTreatment : treatment,
-          ),
-        );
-        if (this._selectedTreatment()?.id === treatmentId) {
-          this._selectedTreatment.set(updatedTreatment);
-        }
-      }),
-    );
-  }
-
-  updateTreatmentStatus(treatmentId: string, status: string) {
-    return this.api.patch<TreatmentResponse>(`/treatments/${treatmentId}`, { status }).pipe(
-      tap((updatedTreatment: TreatmentResponse) => {
-        this._treatments.update((prev: TreatmentResponse[]) =>
-          prev.map(
-            (treatment: TreatmentResponse): TreatmentResponse =>
-              treatment.id === treatmentId ? updatedTreatment : treatment,
-          ),
-        );
-        if (this._selectedTreatment()?.id === treatmentId) {
-          this._selectedTreatment.set(updatedTreatment);
-        }
-      }),
-    );
-  }
-
-  getTreatmentConsumptions(treatmentId: string, params?: Omit<ListTreatmentsParams, 'profile_id'>) {
+  getTreatmentConsumptions(treatmentId: string, params?: ListTreatmentsParams) {
     return this.api
       .get<ConsumptionsListResponse>(
         `/treatments/${treatmentId}/consumptions`,
@@ -158,25 +151,6 @@ export class TreatmentsService {
       .pipe(
         tap(({ items, nextCursor }: ConsumptionsListResponse) => {
           this._consumptions.set(items);
-          this._nextConsumptionsCursor.set(nextCursor);
-        }),
-      );
-  }
-
-  loadMoreConsumptions(
-    treatmentId: string,
-    params?: Omit<ListTreatmentsParams, 'profile_id' | 'cursor'>,
-  ) {
-    const cursor = this._nextConsumptionsCursor();
-    if (!cursor) return null;
-
-    return this.api
-      .get<ConsumptionsListResponse>(`/treatments/${treatmentId}/consumptions`, {
-        params: { ...params, cursor },
-      })
-      .pipe(
-        tap(({ items, nextCursor }: ConsumptionsListResponse) => {
-          this._consumptions.update((prev: ConsumptionResponse[]) => [...prev, ...items]);
           this._nextConsumptionsCursor.set(nextCursor);
         }),
       );

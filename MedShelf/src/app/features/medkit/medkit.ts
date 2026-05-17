@@ -23,10 +23,9 @@ interface Medicine {
   name: string;
   quantity: number;
   unit: string;
-  dosage: string;
   expiryDate: Date;
   status: 'valid' | 'expiringNext' | 'expired';
-  instructions?: string;
+  placeName: string;
   selected?: boolean;
 }
 
@@ -53,7 +52,6 @@ export class Medkit implements OnInit {
     moreVertical: MoreVertical,
   };
 
-  // 👇 signals en lugar de arrays mutables
   medicines = signal<Medicine[]>([]);
   filteredMedicines = signal<Medicine[]>([]);
   searchTerm = signal('');
@@ -97,16 +95,18 @@ export class Medkit implements OnInit {
   mapItemToMedicine(item: any): Medicine {
     const expiryDate = new Date(item.expirationDate ?? Date.now());
     const status = this.getMedicineStatus(expiryDate);
-    const productName = item.product?.name ?? item.product?.id ?? `Medicamento ${item.id}`;
+    const productName = item.product?.name ?? `Medicamento ${item.id}`;
+    const placeName = item.place?.name ?? 'Sin lugar';
+    const quantity = Number(item.availableContent ?? 0);
+
     return {
       id: String(item.id),
       name: productName,
-      quantity: Number(item.totalContent ?? 0),
-      unit: item.unit ?? 'unidades',
-      dosage: item.dosage ?? 'Sin dosis registrada',
+      quantity,
+      unit: 'unidades',   
       expiryDate,
       status,
-      instructions: item.instructions ?? '',
+      placeName,
     };
   }
 
@@ -131,9 +131,9 @@ export class Medkit implements OnInit {
       this.filteredMedicines.set([...this.medicines()]);
     } else {
       this.filteredMedicines.set(
-        this.medicines().filter(
-          (med) =>
-            med.name.toLowerCase().includes(term) || med.instructions?.toLowerCase().includes(term),
+        this.medicines().filter((med) =>
+          med.name.toLowerCase().includes(term) ||
+          med.placeName.toLowerCase().includes(term)
         ),
       );
     }

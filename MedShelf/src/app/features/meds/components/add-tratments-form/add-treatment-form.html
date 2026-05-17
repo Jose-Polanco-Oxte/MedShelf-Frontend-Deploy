@@ -1,4 +1,4 @@
-<form class="form" (ngSubmit)="saveTreatment()">
+<div class="form-wrapper">
   <div class="fab-return">
     <a routerLink="/meds" title="Volver">
       <lucide-angular [img]="icons.arrowLeft" size="24" class="fab-icon"></lucide-angular>
@@ -44,7 +44,7 @@
           (input)="onSearchChange($any($event.target).value)"
           autocomplete="off"
         />
-        @if (formData.itemId) {
+        @if (formData.productId) {
           <button type="button" class="combobox-clear" (click)="clearItem($event)" title="Limpiar">
             <lucide-angular [img]="icons.x" size="14"></lucide-angular>
           </button>
@@ -68,7 +68,7 @@
               @for (item of items; track item.id) {
                 <li
                   class="combobox-option"
-                  [class.selected]="formData.itemId === item.id"
+                  [class.selected]="formData.productId === item.id"
                   (click)="selectItem(item)"
                 >
                   {{ item.label }}
@@ -76,7 +76,7 @@
               }
             </ul>
             @if (hasMoreItems) {
-              <button type="button" class="combobox-load-more" (click)="loadInitialItems()">
+              <button type="button" class="combobox-load-more" (click)="loadMoreProducts()">
                 Cargar más
               </button>
             }
@@ -88,12 +88,12 @@
 
   <!-- Dosis -->
   <div class="form-group">
-    <label for="doseQuantity">Cantidad por dosis</label>
+    <label for="dose">Cantidad por dosis</label>
     <input
       type="number"
-      id="doseQuantity"
-      [(ngModel)]="formData.doseQuantity"
-      name="doseQuantity"
+      id="dose"
+      name="dose"
+      [(ngModel)]="formData.dose"
       min="1"
       placeholder="Ej. 1"
       required
@@ -109,44 +109,46 @@
         <input
           type="number"
           id="frequency"
-          [(ngModel)]="formData.frequencyValue"
-          name="frequencyValue"
+          name="frequency"
+          [(ngModel)]="formData.frequency"
           min="1"
           max="24"
           placeholder="Ej. 8"
         />
       </div>
       <div class="form-group">
-        <label for="startTime">Hora de inicio</label>
-        <input type="time" id="startTime" [(ngModel)]="formData.startTime" name="startTime" />
+        <label for="startDate">Fecha de inicio</label>
+        <input type="date" id="startDate" name="startDate" [(ngModel)]="formData.startDate" />
+      </div>
+    </div>
+
+    <!-- Próximas tomas (informativo) -->
+    @if (getNextScheduledTimes().length > 0) {
+      <p class="schedule-hint">Próximas tomas: {{ getNextScheduledTimes().join(' · ') }}</p>
+    }
+  </div>
+
+  <!-- Duración -->
+  <div class="form-section">
+    <h3>Duración del tratamiento</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="duration">Cantidad</label>
+        <input
+          type="number"
+          id="duration"
+          name="duration"
+          [(ngModel)]="formData.duration"
+          min="1"
+          placeholder="Ej. 7"
+        />
       </div>
     </div>
   </div>
 
-  <!-- Duración -->
-  <div class="form-group">
-    <label for="duration">Duración del tratamiento</label>
-    <div class="duration-input">
-      <input
-        type="number"
-        id="duration"
-        [(ngModel)]="formData.duration"
-        name="duration"
-        min="1"
-        max="365"
-        placeholder="Ej. 7"
-      />
-      <select [(ngModel)]="formData.durationUnit" name="durationUnit" class="duration-select">
-        <option value="days">días</option>
-        <option value="weeks">semanas</option>
-        <option value="months">meses</option>
-      </select>
-    </div>
-  </div>
-
   <!-- Botón -->
-  <button type="submit" class="submit-btn" [disabled]="isLoading">
+  <button type="button" class="submit-btn" [disabled]="isLoading" (click)="saveTreatment()">
     <lucide-angular [img]="icons.check" size="20" class="btn-icon"></lucide-angular>
     {{ isLoading ? 'Guardando...' : 'Guardar Tratamiento' }}
   </button>
-</form>
+</div>

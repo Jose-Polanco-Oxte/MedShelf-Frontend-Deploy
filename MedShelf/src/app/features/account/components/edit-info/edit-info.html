@@ -1,5 +1,4 @@
 <div class="edit-profile-container">
-  <!-- Toast Notification -->
   @if (toastMessage) {
     <div
       [ngClass]="{
@@ -18,7 +17,6 @@
     </div>
   }
 
-  <!-- Botón retorno -->
   <div class="header-actions">
     <a routerLink="/account" class="btn-back">
       <lucide-angular [img]="icons.arrowLeft" size="24"></lucide-angular>
@@ -28,49 +26,48 @@
   </div>
 
   <form class="edit-form" (ngSubmit)="saveProfile()">
-    <!-- Nombre del usuario -->
     <div class="form-group">
       <label for="name">Nombre</label>
-      <input 
-        type="text" 
-        id="name" 
+      <input
+        type="text"
+        id="name"
         [ngModel]="profileData().name"
         (ngModelChange)="updateName($event)"
         name="name"
         required />
     </div>
 
-    <!-- Email del usuario -->
     <div class="form-group">
       <label for="email">Email</label>
-      <input 
-        type="email" 
-        id="email" 
+      <input
+        type="email"
+        id="email"
         [ngModel]="profileData().email"
         (ngModelChange)="updateEmail($event)"
         name="email"
         required />
     </div>
 
-    <!-- Fecha de nacimiento -->
-    <div class="form-group">
+    <!-- Fecha con fix de picker -->
+    <div class="form-group" (click)="openDatePicker()">
       <label for="birthDate">Fecha de nacimiento</label>
-      <input 
-        type="date" 
-        id="birthDate" 
+      <input
+        #birthDateInput
+        type="date"
+        id="birthDate"
         [ngModel]="profileData().birthDate"
         (ngModelChange)="updateBirthDate($event)"
+        [max]="maxBirthDate()"
         name="birthDate"
         required />
     </div>
 
-    <!-- Alergias -->
     <div class="form-group">
       <label for="allergyInput">Alergias</label>
       <div class="allergy-input-wrapper">
-        <input 
-          type="text" 
-          id="allergyInput" 
+        <input
+          type="text"
+          id="allergyInput"
           [ngModel]="allergyInput()"
           (ngModelChange)="allergyInput.set($event)"
           name="allergyInput"
@@ -89,7 +86,6 @@
       }
     </div>
 
-    <!-- Botones -->
     <div class="form-actions">
       <button type="submit" class="btn-save">
         <lucide-angular [img]="icons.save" size="20"></lucide-angular>

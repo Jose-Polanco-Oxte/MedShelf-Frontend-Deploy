@@ -1,6 +1,10 @@
-<div class="treatment-container">
+<main class="treatment-container">
   <div class="header">
     <h2>Tratamientos</h2>
+    <a routerLink="add-treatment" class="fab" title="Agregar tratamiento">
+      <lucide-angular [img]="icons.plus" size="20" class="fab-icon"></lucide-angular>
+      Agregar
+    </a>
   </div>
 
   @if (errorMessage) {
@@ -9,57 +13,90 @@
     </div>
   }
 
-  <!-- Medicamentos activos -->
-  <div class="active-section">
-    <p class="section-title">MEDICAMENTOS ACTIVOS</p>
+  <section class="treatment-list">
+    <p class="section-label">Todos los tratamientos</p>
 
-    @if (isLoading) {
-      <p class="state-msg">Cargando...</p>
-    } @else if (treatments.length === 0) {
-      <p class="state-msg">No hay tratamientos activos.</p>
-    } @else {
-      <div class="active-scroll">
-        @for (treatment of treatments; track treatment.id) {
-          @if (isActive(treatment)) {
-            <div class="active-card">
-              <div class="active-icon">💊</div>
-              <p class="active-name">{{ treatment.itemId }}</p>
-              <p class="active-dosage">{{ treatment.doseQuantity }}</p>
-            </div>
-          }
+    @for (treatment of treatments(); track treatment.id) {
+      <div
+        class="treatment-card"
+        [class.expanded]="expandedId() === treatment.id"
+        (click)="toggleExpand(treatment)"
+      >
+        <!-- Fila principal -->
+        <div class="card-main">
+          <div class="card-left">
+            <span class="card-icon">💊</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-name">
+              {{ treatment.product?.name ? treatment.product.name : '—' }}
+            </h3>
+            <p class="card-meta">
+              {{ treatment.dose ? treatment.dose : '—' }} dosis · Cada
+              {{ treatment.frequencyHours ? treatment.frequencyHours : '—' }} h
+              @if (treatment.days) {
+                · {{ treatment.days }} días
+              }
+            </p>
+          </div>
+          <div class="card-right">
+            <span
+              class="status-badge"
+              [class.status-active]="isActive(treatment)"
+              [class.status-inactive]="!isActive(treatment)"
+            >
+              {{ treatment.status }}
+            </span>
+            <lucide-angular
+              [img]="icons.chevronDown"
+              size="16"
+              class="chevron"
+              [class.rotated]="expandedId() === treatment.id"
+            ></lucide-angular>
+          </div>
+        </div>
+
+        <!-- Detalle expandible -->
+        @if (expandedId() === treatment.id) {
+          <div class="card-detail" (click)="$event.stopPropagation()">
+            @if (itemDetails()[treatment.id]; as item) {
+              @for (medItem of item; track medItem.id) {
+                <div class="detail-item-card">
+                  <div class="detail-row">
+                    <span class="detail-label">Ubicación</span>
+                    <span class="detail-value">{{ medItem.place?.name ?? '—' }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Disponible</span>
+                    <span class="detail-value">{{ medItem.availableContent ?? '—' }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Vencimiento</span>
+                    <span class="detail-value">{{
+                      medItem.expirationDate | date: 'dd/MM/yyyy'
+                    }}</span>
+                  </div>
+                  <div class="detail-actions">
+                    <button
+                      class="detail-btn detail-btn-primary"
+                      (click)="registerConsumption(medItem.id, treatment.dose)"
+                    >
+                      Tomar {{ treatment.dose }} dosis
+                    </button>
+                  </div>
+                </div>
+              }
+            } @else {
+              <p class="detail-loading">Cargando detalles...</p>
+            }
+          </div>
         }
       </div>
     }
-  </div>
-
-  <!-- Lista de tomas -->
-  <div class="treatment-list">
-    <p class="time-label">Tratamientos</p>
-    <div class="treatment-group">
-      @if (!isLoading) {
-        @for (treatment of treatments; track treatment.id) {
-          <div class="treatment-card">
-            <div class="center">
-              <h3>{{ treatment.itemId }}</h3>
-              <p>{{ formatFrequency(treatment) }}</p>
-            </div>
-            <div class="right">
-              <button [ngClass]="isActive(treatment) ? 'take-btn pending' : 'take-btn taken'">
-                {{ treatment.status }}
-              </button>
-            </div>
-          </div>
-        }
-
-        @if (hasMore) {
-          <button class="load-more-btn" (click)="loadMore()">Cargar más</button>
-        }
-      }
-    </div>
-  </div>
+  </section>
 
   <!-- Botón de Acción Flotante -->
-  <a class="fab" routerLink="add-treatment" title="Agregar tratamiento">
+  <a class="fab" routerLink="add-medicine" title="Agregar medicamento">
     <lucide-angular [img]="icons.plus" size="28" class="fab-icon"></lucide-angular>
   </a>
-</div>
+</main>
